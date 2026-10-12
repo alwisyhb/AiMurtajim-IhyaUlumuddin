@@ -2173,6 +2173,9 @@ Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
 
 # Serve UI
 @app.get("/", response_class=HTMLResponse)
+@app.get("/api", response_class=HTMLResponse)
+@app.get("/api/index", response_class=HTMLResponse)
+@app.get("/api/index.py", response_class=HTMLResponse)
 def index():
     candidates = [
         BASE_DIR / "templates" / "index.html",
@@ -2188,6 +2191,10 @@ def index():
     if not html_file or not html_file.exists():
         return HTMLResponse("<h1>Templates index.html belum dibuat.</h1>")
     return HTMLResponse(content=html_file.read_text(encoding="utf-8"))
+
+@app.get("/{full_path:path}", response_class=HTMLResponse)
+def catch_all(full_path: str):
+    return index()
 
 if __name__ == "__main__":
     import uvicorn
