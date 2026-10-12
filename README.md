@@ -1,3 +1,13 @@
+---
+title: AiMurtajim IhyaUlumuddin
+emoji: 📖
+colorFrom: green
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Database Kitab Ihya' 'Ulum al-Din (Jilid 1 - 4) - Maktabah Syamilah
 
 Database lengkap teks dan struktur Kitab **Ihya' 'Ulum al-Din (إحياء علوم الدين)** karya **Hujjatul Islam Abu Hamid Al-Ghazali (wafat 505 H)** yang bersumber langsung dari korpus **Al-Maktabah Asy-Syamilah (Shamela.ws ID: 9472)**, cetakan Dar al-Ma'rifah Beirut dengan catatan takhrij hadis oleh Al-Hafizh Al-Iraqi (*Al-Mughni 'an Hamlil Asfar*).
