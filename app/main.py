@@ -64,6 +64,7 @@ def get_db_path() -> Path:
         PROJECT_DIR / "ihya_ulumuddin.db",
         Path.cwd() / "ihya_ulumuddin.db",
         BASE_DIR / "ihya_ulumuddin.db",
+        Path("/var/task/ihya_ulumuddin.db"),
         Path("/app/ihya_ulumuddin.db")
     ]
     for c in candidates:
@@ -2169,8 +2170,18 @@ Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
 # Serve UI
 @app.get("/", response_class=HTMLResponse)
 def index():
-    html_file = BASE_DIR / "templates" / "index.html"
-    if not html_file.exists():
+    candidates = [
+        BASE_DIR / "templates" / "index.html",
+        PROJECT_DIR / "app" / "templates" / "index.html",
+        Path.cwd() / "app" / "templates" / "index.html",
+        Path("/var/task/app/templates/index.html")
+    ]
+    html_file = None
+    for c in candidates:
+        if c.exists():
+            html_file = c
+            break
+    if not html_file or not html_file.exists():
         return HTMLResponse("<h1>Templates index.html belum dibuat.</h1>")
     return HTMLResponse(content=html_file.read_text(encoding="utf-8"))
 
