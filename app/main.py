@@ -47,8 +47,12 @@ app.add_middleware(
 
 # Mount static files
 static_dir = BASE_DIR / "static"
-static_dir.mkdir(exist_ok=True)
-app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+try:
+    static_dir.mkdir(exist_ok=True)
+except Exception:
+    pass
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 def log_debug(msg: str):
     try:
