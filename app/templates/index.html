@@ -89,64 +89,107 @@
       background-image: radial-gradient(#ece5d8 0.75px, transparent 0.75px);
       background-size: 20px 20px;
     }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Mobile Split Screen Styles (Dual-Pane Viewport) */
+    @media (max-width: 1023px) {
+      .mobile-split-active #panel-reader {
+        height: 42dvh !important;
+        max-height: 42dvh !important;
+        min-height: 240px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+      }
+      .mobile-split-active #panel-reader .mushaf-card {
+        flex: 1 1 auto !important;
+        overflow-y: auto !important;
+        min-height: 0 !important;
+      }
+      .mobile-split-active #panel-translate {
+        height: 44dvh !important;
+        max-height: 44dvh !important;
+        min-height: 260px !important;
+        overflow-y: auto !important;
+        padding-bottom: 3.5rem !important;
+      }
+    }
+    .mobile-split-horizontal {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 0.75rem !important;
+    }
+    @media (max-width: 1023px) {
+      .mobile-split-horizontal #panel-reader,
+      .mobile-split-horizontal #panel-translate {
+        height: 75dvh !important;
+        max-height: 75dvh !important;
+        overflow-y: auto !important;
+      }
+    }
   </style>
 </head>
-<body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-emerald-200 selection:text-emerald-950">
+<body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-emerald-200 selection:text-emerald-950 overflow-x-hidden">
 
   <!-- TOP NAVBAR -->
   <header class="bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white border-b border-emerald-800/80 shadow-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-4">
+    <div class="max-w-7xl mx-auto px-2 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1 sm:gap-4">
       
       <!-- Brand & Title (Clean & Compact) -->
-      <div class="flex items-center space-x-2 shrink-0">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-emerald-600 flex items-center justify-center shadow-xs text-emerald-950 font-bold font-arabic text-lg select-none">
+      <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-amber-400 to-emerald-600 flex items-center justify-center shadow-xs text-emerald-950 font-bold font-arabic text-base sm:text-lg select-none">
           إ
         </div>
-        <div class="flex items-baseline space-x-1.5">
-          <span class="text-base sm:text-lg font-bold tracking-tight text-amber-300 font-arabic leading-none">المُتَرْجِم</span>
+        <div class="flex items-baseline space-x-1">
+          <span class="text-sm sm:text-lg font-bold tracking-tight text-amber-300 font-arabic leading-none">المُتَرْجِم</span>
           <span class="text-xs font-semibold text-emerald-200 hidden md:inline">· Ihya' Ulumiddin</span>
         </div>
       </div>
 
-      <!-- Mode Switcher (Sleek Segmented Controls) -->
+      <!-- Mode Switcher (Sleek Segmented Controls - Mobile Enabled) -->
       <nav class="flex p-0.5 bg-emerald-950/90 border border-emerald-700/60 rounded-xl text-xs font-semibold shrink-0">
-        <button onclick="setViewMode('reader')" id="btn-mode-reader" class="px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-white text-emerald-950 shadow-xs transition flex items-center space-x-1.5">
+        <button onclick="setViewMode('reader')" id="btn-mode-reader" class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-white text-emerald-950 shadow-xs transition flex items-center space-x-1 sm:space-x-1.5">
           <span>📖</span>
-          <span>Kitab</span>
+          <span class="text-[11px] sm:text-xs">Kitab</span>
         </button>
-        <button onclick="setViewMode('translate')" id="btn-mode-translate" class="px-2.5 sm:px-3.5 py-1.5 rounded-lg text-emerald-200 hover:text-white transition flex items-center space-x-1.5">
+        <button onclick="setViewMode('translate')" id="btn-mode-translate" class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-emerald-200 hover:text-white transition flex items-center space-x-1 sm:space-x-1.5">
           <span>✍️</span>
-          <span>Terjemah</span>
+          <span class="text-[11px] sm:text-xs">Terjemah</span>
         </button>
-        <button onclick="setViewMode('split')" id="btn-mode-split" class="hidden lg:flex px-3 py-1.5 rounded-lg text-emerald-200 hover:text-white transition items-center space-x-1.5">
+        <button onclick="setViewMode('split')" id="btn-mode-split" class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-emerald-200 hover:text-white transition flex items-center space-x-1 sm:space-x-1.5" title="Mode Belah (Perbandingan Kitab & Terjemah)">
           <span>⇄</span>
-          <span>Belah</span>
+          <span class="text-[11px] sm:text-xs">Belah</span>
         </button>
       </nav>
 
       <!-- Right Actions (Clean Pills, No Text Overlap) -->
-      <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+      <div class="flex items-center space-x-1 sm:space-x-2 shrink-0">
         <!-- Alfiyyah Ibnu Malik -->
-        <button onclick="openAlfiyyahModal()" title="Kaidah Nahwu Alfiyyah Ibnu Malik & Ngalogat Sunda" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 border border-emerald-600/70 text-emerald-100 transition shadow-xs">
+        <button onclick="openAlfiyyahModal()" title="Kaidah Nahwu Alfiyyah Ibnu Malik & Ngalogat Sunda" class="flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 border border-emerald-600/70 text-emerald-100 transition shadow-xs">
           <span>📜</span>
           <span class="hidden sm:inline">Alfiyyah</span>
         </button>
 
         <!-- Kamus Pesantren -->
-        <button onclick="openGlossaryModal()" title="Database Kamus Logat Pesantren" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 border border-emerald-600/70 text-emerald-100 transition shadow-xs">
+        <button onclick="openGlossaryModal()" title="Database Kamus Logat Pesantren" class="flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 border border-emerald-600/70 text-emerald-100 transition shadow-xs">
           <span>📖</span>
           <span class="hidden sm:inline">Kamus</span>
           <span id="nav-glossary-count" class="px-1.5 py-0.2 rounded-full bg-emerald-950 text-amber-300 text-[10px] font-mono font-bold">111</span>
         </button>
 
         <!-- Cari -->
-        <button onclick="openSearchModal()" title="Cari di 1.706 Halaman" class="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-800/80 hover:bg-emerald-700 text-amber-300 border border-emerald-600/70 transition shadow-xs text-xs font-semibold">
+        <button onclick="openSearchModal()" title="Cari di 1.706 Halaman" class="flex items-center space-x-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-emerald-800/80 hover:bg-emerald-700 text-amber-300 border border-emerald-600/70 transition shadow-xs text-xs font-semibold">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           <span class="hidden sm:inline">Cari</span>
         </button>
 
         <!-- API Key -->
-        <button onclick="openApiKeyModal()" title="Setel Google Gemini API Key" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 border border-emerald-600/70 text-emerald-100 transition shadow-xs">
+        <button onclick="openApiKeyModal()" title="Setel Google Gemini API Key" class="flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 border border-emerald-600/70 text-emerald-100 transition shadow-xs">
           <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
           </svg>
@@ -172,7 +215,7 @@
           
           <!-- Dropdown Jilid & Kitab -->
           <div class="flex items-center space-x-2 flex-1 min-w-0">
-            <select id="select-volume" onchange="onVolumeChange(true)" class="text-xs font-bold bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-xs text-slate-800 shrink-0 w-36 sm:w-44">
+            <select id="select-volume" onchange="onVolumeChange(true)" class="text-xs font-bold bg-white border border-slate-300 rounded-xl px-2 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-xs text-slate-800 shrink-0 w-28 sm:w-44">
               <option value="1">Jilid 1 (Ibadah)</option>
               <option value="2">Jilid 2 (Adat)</option>
               <option value="3">Jilid 3 (Muhlikat)</option>
@@ -243,19 +286,41 @@
           </div>
 
           <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
-            <button onclick="sendSelectionToEditor(true)" class="flex-1 sm:flex-initial px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-xs">
+            <button onclick="sendSelectionToEditor(true)" class="flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-xs">
               <svg class="w-4 h-4 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-              <span>⚡ Terjemahkan Teks Pilihan</span>
+              <span class="hidden sm:inline">⚡ Terjemahkan Teks Pilihan</span>
+              <span class="sm:hidden">⚡ Teks Pilihan</span>
             </button>
 
-            <button onclick="sendFullPageToEditor(true)" class="flex-1 sm:flex-initial px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-sm">
+            <button onclick="sendFullPageToEditor(true)" class="flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-sm">
               <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-              <span>⚡ Terjemahkan Halaman Ini</span>
+              <span class="hidden sm:inline">⚡ Terjemahkan Halaman Ini</span>
+              <span class="sm:hidden">⚡ 1 Halaman</span>
             </button>
           </div>
         </div>
 
       </section>
+
+      <!-- ======================================================== -->
+      <!-- MOBILE SPLIT COMPARISON DIVIDER BAR (Active when Split on mobile < lg) -->
+      <!-- ======================================================== -->
+      <div id="mobile-split-divider" class="hidden flex-col sm:flex-row items-center justify-between bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white px-3.5 py-2 rounded-xl shadow-md border border-emerald-700/80 text-xs font-semibold gap-2 transition-all">
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="mobile-split-divider-label" class="text-amber-200 font-bold">⇅ Perbandingan: Kitab (Atas) & Terjemah (Bawah)</span>
+        </div>
+        <div class="flex items-center space-x-1.5">
+          <button onclick="toggleMobileSplitLayout()" id="btn-toggle-split-layout" class="px-2.5 py-1 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-600/80 text-[11px] font-bold transition flex items-center space-x-1 shadow-xs">
+            <span id="split-layout-icon">⇄</span>
+            <span id="split-layout-text">Kiri-Kanan</span>
+          </button>
+          <button onclick="swapMobilePanels()" id="btn-swap-panels" title="Tukar posisi Atas & Bawah" class="px-2.5 py-1 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-emerald-200 hover:text-white border border-emerald-600/80 text-[11px] font-bold transition flex items-center space-x-1 shadow-xs">
+            <span>🔄</span>
+            <span>Tukar</span>
+          </button>
+        </div>
+      </div>
 
       <!-- ======================================================== -->
       <!-- PANEL 2: PENERJEMAH & SYAKAL (TRANSLATOR WORKSPACE) -->
@@ -265,22 +330,22 @@
         <!-- Input Box Card -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           
-          <div class="bg-slate-50 border-b border-slate-200 px-5 py-3 flex flex-wrap items-center justify-between gap-2">
+          <div class="bg-slate-50 border-b border-slate-200 px-4 sm:px-5 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-2">
             <h2 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center space-x-2">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
               <span>Kutipan Teks Arab yang Akan Diproses:</span>
             </h2>
 
-            <!-- Quick Samples -->
-            <div class="flex items-center space-x-1.5">
-              <span class="text-[11px] text-slate-400 mr-1 hidden sm:inline">Contoh:</span>
-              <button onclick="loadPreset('sample_1')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">طلب العلم</button>
-              <button onclick="loadPreset('sample_2')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">إنما الأعمال</button>
-              <button onclick="loadPreset('sample_3')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">العلم والعمل</button>
-              <button onclick="loadPreset('sample_4')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">قال تعالى</button>
-              <button onclick="loadPreset('sample_5')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">قد أفلح</button>
-              <button onclick="loadPreset('sample_6')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">كاد الفقر</button>
-              <button onclick="loadPreset('sample_7')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">أربعة أرباع</button>
+            <!-- Quick Samples (Smooth Swipable Horizontal Carousel on Mobile) -->
+            <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-1 w-full sm:w-auto max-w-full">
+              <span class="text-[11px] text-slate-400 mr-1 hidden sm:inline shrink-0">Contoh:</span>
+              <button onclick="loadPreset('sample_1')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition shrink-0">طلب العلم</button>
+              <button onclick="loadPreset('sample_2')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition shrink-0">إنما الأعمال</button>
+              <button onclick="loadPreset('sample_3')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition shrink-0">العلم والعمل</button>
+              <button onclick="loadPreset('sample_4')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition shrink-0">قال تعالى</button>
+              <button onclick="loadPreset('sample_5')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition shrink-0">قد أفلح</button>
+              <button onclick="loadPreset('sample_6')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition shrink-0">كاد الفقر</button>
+              <button onclick="loadPreset('sample_7')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition shrink-0">أربعة أرباع</button>
             </div>
           </div>
 
@@ -324,31 +389,32 @@
           
           <!-- Output 1: Tashkil Arabic Text -->
           <div class="bg-white rounded-2xl border border-emerald-200 shadow-sm overflow-hidden">
-            <div class="bg-emerald-50/80 border-b border-emerald-100 px-4 sm:px-5 py-3 flex flex-wrap items-center justify-between gap-2.5">
+            <div class="bg-emerald-50/80 border-b border-emerald-100 px-3 sm:px-5 py-2.5 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div class="flex items-center space-x-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                <h3 class="text-xs sm:text-sm font-bold text-emerald-950">النَّصُّ بِالشَّكْلِ التَّامِّ (Teks Arab Bersyakal Sesuai Nahwu & Shorof)</h3>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 shrink-0"></span>
+                <h3 class="text-xs sm:text-sm font-bold text-emerald-950">النَّصُّ بِالشَّكْلِ التَّامِّ <span class="font-sans text-xs text-slate-500 font-normal hidden sm:inline">(Teks Arab Bersyakal Sesuai Nahwu & Shorof)</span></h3>
               </div>
               
               <!-- Spacing & Font Controls -->
-              <div class="flex items-center space-x-1.5 sm:space-x-2">
+              <div class="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto no-scrollbar justify-between sm:justify-end w-full sm:w-auto">
                 <!-- Spacing Presets -->
-                <div class="flex items-center bg-white border border-emerald-200/90 rounded-lg p-0.5 text-[11px] shadow-2xs">
+                <div class="flex items-center bg-white border border-emerald-200/90 rounded-lg p-0.5 text-[11px] shadow-2xs shrink-0">
                   <button onclick="setArabicSpacing('compact')" id="spc-btn-compact" class="px-2 py-0.5 rounded font-medium text-slate-600 hover:text-emerald-800 transition" title="Jarak Rapat">Rapat</button>
                   <button onclick="setArabicSpacing('ideal')" id="spc-btn-ideal" class="px-2 py-0.5 rounded font-bold bg-emerald-100 text-emerald-900 transition shadow-2xs" title="Jarak Pas (Rekomendasi)">Pas</button>
                   <button onclick="setArabicSpacing('relaxed')" id="spc-btn-relaxed" class="px-2 py-0.5 rounded font-medium text-slate-600 hover:text-emerald-800 transition" title="Jarak Agak Renggang">Renggang</button>
                 </div>
 
                 <!-- Font Size Adjustment -->
-                <div class="flex items-center bg-white border border-emerald-200/90 rounded-lg p-0.5 text-xs shadow-2xs">
+                <div class="flex items-center bg-white border border-emerald-200/90 rounded-lg p-0.5 text-xs shadow-2xs shrink-0">
                   <button onclick="adjustArabicFontSize(-2)" class="px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition" title="Perkecil Ukuran Huruf">A-</button>
                   <span id="arabic-font-size-label" class="px-1.5 text-[11px] font-mono text-slate-500">26px</span>
                   <button onclick="adjustArabicFontSize(2)" class="px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition" title="Perbesar Ukuran Huruf">A+</button>
                 </div>
 
                 <!-- Copy Button -->
-                <button onclick="copyToClipboard('tashkil-result', this)" class="text-xs text-emerald-800 font-bold px-2.5 py-1 rounded-md bg-emerald-100 hover:bg-emerald-200 transition shadow-2xs">
-                  Salin Teks
+                <button onclick="copyToClipboard('tashkil-result', this)" class="text-xs text-emerald-800 font-bold px-2.5 py-1 rounded-md bg-emerald-100 hover:bg-emerald-200 transition shadow-2xs shrink-0 flex items-center space-x-1">
+                  <span>📋</span>
+                  <span>Salin Teks</span>
                 </button>
               </div>
             </div>
@@ -363,29 +429,30 @@
           <!-- Output 2: Three Translation Tabs (Indo, Sunda Lemes, Logat Pesantren) -->
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             
-            <div class="bg-slate-50 border-b border-slate-200 px-3 sm:px-5 pt-2 flex flex-wrap items-center justify-between gap-2">
-              <div class="flex flex-wrap space-x-1 sm:space-x-2">
-                <button onclick="switchTransTab('indo')" id="tab-btn-indo" class="pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 border-emerald-700 text-emerald-900 transition flex items-center space-x-1.5">
+            <div class="bg-slate-50 border-b border-slate-200 px-3 sm:px-5 pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center space-x-1 sm:space-x-2 overflow-x-auto no-scrollbar whitespace-nowrap pb-1 max-w-full">
+                <button onclick="switchTransTab('indo')" id="tab-btn-indo" class="pb-2 px-2.5 sm:px-3 text-xs sm:text-sm font-bold border-b-2 border-emerald-700 text-emerald-900 transition flex items-center space-x-1 sm:space-x-1.5 shrink-0">
                   <span>🇮🇩</span>
                   <span>Indonesia</span>
                 </button>
-                <button onclick="switchTransTab('sunda_lemes')" id="tab-btn-sunda_lemes" class="pb-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition flex items-center space-x-1.5">
+                <button onclick="switchTransTab('sunda_lemes')" id="tab-btn-sunda_lemes" class="pb-2 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition flex items-center space-x-1 sm:space-x-1.5 shrink-0">
                   <span>🍃</span>
                   <span>Basa Sunda Lemes</span>
                 </button>
-                <button onclick="switchTransTab('sunda_logat')" id="tab-btn-sunda_logat" class="pb-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition flex items-center space-x-1.5">
+                <button onclick="switchTransTab('sunda_logat')" id="tab-btn-sunda_logat" class="pb-2 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition flex items-center space-x-1 sm:space-x-1.5 shrink-0">
                   <span>🕌</span>
                   <span>Logat Pasantren Sunda</span>
                 </button>
-                <button onclick="switchTransTab('sunda_klasik')" id="tab-btn-sunda_klasik" class="pb-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition flex items-center space-x-1.5">
+                <button onclick="switchTransTab('sunda_klasik')" id="tab-btn-sunda_klasik" class="pb-2 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition flex items-center space-x-1 sm:space-x-1.5 shrink-0">
                   <span>📜</span>
                   <span>Sunda Klasik (Makna Miring)</span>
                   <span class="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold">Baru</span>
                 </button>
               </div>
 
-              <button onclick="copyActiveTranslation(this)" class="mb-2 text-xs text-slate-700 font-bold px-2.5 py-1 rounded-md bg-slate-200 hover:bg-slate-300 transition">
-                Salin Terjemah
+              <button onclick="copyActiveTranslation(this)" class="mb-2 self-end sm:self-auto text-xs text-slate-700 font-bold px-2.5 py-1 rounded-md bg-slate-200 hover:bg-slate-300 transition shrink-0 flex items-center space-x-1">
+                <span>📋</span>
+                <span>Salin Terjemah</span>
               </button>
             </div>
 
@@ -570,10 +637,10 @@
             </div>
 
             <!-- Content Area -->
-            <div class="p-4 sm:p-5">
+            <div class="p-3 sm:p-5">
               <!-- Mode Tabel (Default) -->
-              <div id="tarkib-table-wrap" class="overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
-                <table class="w-full text-left text-xs border-collapse">
+              <div id="tarkib-table-wrap" class="overflow-x-auto custom-scroll rounded-xl border border-slate-200 shadow-2xs">
+                <table class="w-full text-left text-xs border-collapse min-w-[620px]">
                   <thead>
                     <tr class="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                       <th class="py-2.5 px-3 text-center w-10">No</th>
@@ -590,6 +657,10 @@
                   </tbody>
                 </table>
               </div>
+              <div class="text-[11px] text-slate-400 mt-2 sm:hidden flex items-center justify-between">
+                <span>👉 Geser tabel ke kanan untuk melihat rujukan</span>
+                <span>Atau pilih mode 'Kartu' 🗂️</span>
+              </div>
 
               <!-- Mode Kartu Grid (Alternative) -->
               <div id="tarkib-container" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
@@ -603,6 +674,14 @@
     </div>
 
   </main>
+
+  <!-- FLOATING QUICK SWITCHER (Mobile Only FAB) -->
+  <aside id="mobile-fab-switcher" class="fixed bottom-5 right-4 z-40 lg:hidden flex items-center">
+    <button onclick="quickToggleMobileView()" class="flex items-center space-x-1.5 px-3.5 py-2.5 bg-gradient-to-r from-emerald-800 to-emerald-900 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-full shadow-xl border border-emerald-600/80 text-xs font-bold active:scale-95 transition-all">
+      <span id="mobile-fab-icon">✍️</span>
+      <span id="mobile-fab-text">Ke Terjemah</span>
+    </button>
+  </aside>
 
   <!-- SEARCH MODAL (Quick Command Palette style) -->
   <div id="search-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-start justify-center p-4 pt-16">
@@ -970,6 +1049,7 @@
       // 1. Immediately populate kitabs dropdown from pre-baked local data (0ms)
       populateKitabsDropdown(1);
       initApiKey();
+      updateMobileFab('translate');
 
       // 2. Fetch initial page and server status in parallel (non-blocking)
       Promise.all([
@@ -985,12 +1065,16 @@
       });
     });
 
+    let mobileSplitHorizontal = false;
+    let mobilePanelsSwapped = false;
+
     // View Mode Switcher
     function setViewMode(mode) {
       currentViewMode = mode;
       const panelReader = document.getElementById('panel-reader');
       const panelTranslate = document.getElementById('panel-translate');
       const grid = document.getElementById('layout-grid');
+      const divider = document.getElementById('mobile-split-divider');
 
       const btnReader = document.getElementById('btn-mode-reader');
       const btnTranslate = document.getElementById('btn-mode-translate');
@@ -998,25 +1082,107 @@
 
       // Reset button styles
       [btnReader, btnTranslate, btnSplit].forEach(b => {
-        b.className = "px-3 sm:px-4 py-1.5 rounded-lg text-emerald-200 hover:text-white transition flex items-center space-x-1.5";
+        if (!b) return;
+        b.className = "px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-emerald-200 hover:text-white transition flex items-center space-x-1 sm:space-x-1.5";
       });
 
+      // Reset body & grid split classes
+      document.body.classList.remove('mobile-split-active');
+      grid.classList.remove('mobile-split-horizontal');
+
       if (mode === 'reader') {
-        btnReader.className = "px-3 sm:px-4 py-1.5 rounded-lg bg-white text-emerald-950 shadow-sm font-bold transition flex items-center space-x-1.5";
+        btnReader.className = "px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-white text-emerald-950 shadow-xs font-bold transition flex items-center space-x-1 sm:space-x-1.5";
         panelReader.classList.remove('hidden');
         panelTranslate.classList.add('hidden');
+        if (divider) divider.classList.add('hidden');
         grid.className = "flex flex-col space-y-6";
+        updateMobileFab('translate');
       } else if (mode === 'translate') {
-        btnTranslate.className = "px-3 sm:px-4 py-1.5 rounded-lg bg-white text-emerald-950 shadow-sm font-bold transition flex items-center space-x-1.5";
+        btnTranslate.className = "px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-white text-emerald-950 shadow-xs font-bold transition flex items-center space-x-1 sm:space-x-1.5";
         panelTranslate.classList.remove('hidden');
         panelReader.classList.add('hidden');
+        if (divider) divider.classList.add('hidden');
         grid.className = "flex flex-col space-y-6";
+        updateMobileFab('reader');
       } else {
         // Split view
-        btnSplit.className = "px-3 sm:px-4 py-1.5 rounded-lg bg-white text-emerald-950 shadow-sm font-bold transition flex items-center space-x-1.5";
+        btnSplit.className = "px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-white text-emerald-950 shadow-xs font-bold transition flex items-center space-x-1 sm:space-x-1.5";
         panelReader.classList.remove('hidden');
         panelTranslate.classList.remove('hidden');
-        grid.className = "grid grid-cols-1 lg:grid-cols-2 gap-6 items-start";
+        if (divider) divider.classList.remove('hidden');
+
+        if (mobileSplitHorizontal) {
+          grid.className = "mobile-split-horizontal";
+        } else {
+          document.body.classList.add('mobile-split-active');
+          grid.className = "grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 items-start";
+        }
+        updateMobileFab('split');
+      }
+    }
+
+    function toggleMobileSplitLayout() {
+      mobileSplitHorizontal = !mobileSplitHorizontal;
+      const icon = document.getElementById('split-layout-icon');
+      const text = document.getElementById('split-layout-text');
+      const label = document.getElementById('mobile-split-divider-label');
+      
+      if (mobileSplitHorizontal) {
+        if (icon) icon.textContent = '⇅';
+        if (text) text.textContent = 'Atas-Bawah';
+        if (label) label.textContent = '⇄ Perbandingan: Kitab (Kiri) & Terjemah (Kanan)';
+      } else {
+        if (icon) icon.textContent = '⇄';
+        if (text) text.textContent = 'Kiri-Kanan';
+        if (label) label.textContent = '⇅ Perbandingan: Kitab (Atas) & Terjemah (Bawah)';
+      }
+      setViewMode('split');
+    }
+
+    function swapMobilePanels() {
+      mobilePanelsSwapped = !mobilePanelsSwapped;
+      const grid = document.getElementById('layout-grid');
+      const panelReader = document.getElementById('panel-reader');
+      const panelTranslate = document.getElementById('panel-translate');
+      const divider = document.getElementById('mobile-split-divider');
+      
+      if (mobilePanelsSwapped) {
+        grid.insertBefore(panelTranslate, panelReader);
+        if (divider) grid.insertBefore(divider, panelReader);
+      } else {
+        grid.insertBefore(panelReader, panelTranslate);
+        if (divider) grid.insertBefore(divider, panelTranslate);
+      }
+    }
+
+    function updateMobileFab(target) {
+      const fab = document.getElementById('mobile-fab-switcher');
+      const fabIcon = document.getElementById('mobile-fab-icon');
+      const fabText = document.getElementById('mobile-fab-text');
+      if (!fab || !fabIcon || !fabText) return;
+
+      if (target === 'translate') {
+        fab.classList.remove('hidden');
+        fabIcon.textContent = '✍️';
+        fabText.textContent = 'Terjemah';
+      } else if (target === 'reader') {
+        fab.classList.remove('hidden');
+        fabIcon.textContent = '📖';
+        fabText.textContent = 'Kitab';
+      } else {
+        fab.classList.remove('hidden');
+        fabIcon.textContent = '📖';
+        fabText.textContent = 'Kitab';
+      }
+    }
+
+    function quickToggleMobileView() {
+      if (currentViewMode === 'reader') {
+        setViewMode('translate');
+      } else if (currentViewMode === 'translate') {
+        setViewMode('reader');
+      } else {
+        setViewMode('reader');
       }
     }
 

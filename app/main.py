@@ -1486,7 +1486,7 @@ async def verify_key(req: KeyRequest):
     client = genai.Client(api_key=key)
     
     last_err = ""
-    for test_model in ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash"]:
+    for test_model in ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]:
         try:
             interaction = client.interactions.create(
                 model=test_model,
@@ -2040,7 +2040,7 @@ Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
     successful_model = None
     errors_list = []
     preferred_model = req.model_name or "gemini-3.5-flash"
-    fallback_chain = ["gemini-3.5-flash", "gemini-3.8-flash", "gemini-3.5-flash-lite"]
+    fallback_chain = ["gemini-3.5-flash", "gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]
     models_to_try = [preferred_model] + [m for m in fallback_chain if m != preferred_model]
 
     # 4. Multi-Key & Multi-Model Cascade:
