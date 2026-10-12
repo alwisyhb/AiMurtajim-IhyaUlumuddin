@@ -2176,7 +2176,7 @@ Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
 @app.get("/api", response_class=HTMLResponse)
 @app.get("/api/index", response_class=HTMLResponse)
 @app.get("/api/index.py", response_class=HTMLResponse)
-def index():
+def index(request: Request):
     candidates = [
         BASE_DIR / "templates" / "index.html",
         PROJECT_DIR / "app" / "templates" / "index.html",
@@ -2188,13 +2188,17 @@ def index():
         if c.exists():
             html_file = c
             break
-    if not html_file or not html_file.exists():
-        return HTMLResponse("<h1>Templates index.html belum dibuat.</h1>")
-    return HTMLResponse(content=html_file.read_text(encoding="utf-8"))
+    content = html_file.read_text(encoding="utf-8") if (html_file and html_file.exists()) else "<h1>Templates index.html belum dibuat.</h1>"
+    resp = HTMLResponse(content=content)
+    resp.headers["X-Debug-Path"] = request.url.path
+    resp.headers["X-Debug-Scope"] = str(request.scope.get("path"))
+    resp.headers["X-Debug-Query"] = str(request.url.query)
+    resp.headers["X-Debug-Matched"] = request.headers.get("x-matched-path", "")
+    return resp
 
 @app.get("/{full_path:path}", response_class=HTMLResponse)
-def catch_all(full_path: str):
-    return index()
+def catch_all(request: Request, full_path: str):
+    return index(request)
 
 if __name__ == "__main__":
     import uvicorn
