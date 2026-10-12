@@ -1,0 +1,24 @@
+# Python cache & compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Secrets & Environment variables (IMPORTANT: do not push private keys)
+.env
+*.env.local
+
+# Logs & scratch
+*.log
+api_debug.log
+scratch/
+ihya_data.db
+ihya_shamela_raw.txt
+json_exports/
+kitabs_dump.json
+
+# OS generated files
+.DS_Store
+Thumbs.db

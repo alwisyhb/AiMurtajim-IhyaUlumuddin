@@ -1,0 +1,2598 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-[#f8faf8]">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Al-Mutarjim Ihya' 'Ulum al-Din | Terjemah Sunda & Syakal Nahwu-Shorof</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            emerald: {
+              850: '#064e3b',
+              900: '#022c22',
+              950: '#011c15',
+            },
+            parchment: '#fefcf8',
+            gold: {
+              400: '#fbbf24',
+              500: '#d97706',
+              600: '#b45309',
+            }
+          },
+          fontFamily: {
+            arabic: ['"Amiri"', '"Scheherazade New"', 'Traditional Arabic', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Amiri & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    .arabic-text {
+      font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', serif;
+      direction: rtl;
+      line-height: 2.18;
+      word-spacing: 0.10em;
+      letter-spacing: normal;
+      text-rendering: optimizeLegibility;
+      font-feature-settings: "cv01", "cv02", "calt", "liga";
+    }
+    .arabic-tashkil-box {
+      font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', serif;
+      direction: rtl;
+      white-space: pre-wrap;
+      word-break: break-word;
+      text-rendering: optimizeLegibility;
+      font-feature-settings: "cv01", "cv02", "calt", "liga";
+      padding: 0.35rem 0.25rem;
+      transition: all 0.15s ease;
+    }
+    .arabic-spacing-compact {
+      line-height: 1.95 !important;
+      word-spacing: 0.05em !important;
+    }
+    .arabic-spacing-ideal {
+      line-height: 2.18 !important;
+      word-spacing: 0.10em !important;
+    }
+    .arabic-spacing-relaxed {
+      line-height: 2.45 !important;
+      word-spacing: 0.18em !important;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .mushaf-card {
+      background-color: #fdfcf9;
+      background-image: radial-gradient(#ece5d8 0.75px, transparent 0.75px);
+      background-size: 20px 20px;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-emerald-200 selection:text-emerald-950">
+
+  <!-- TOP NAVBAR -->
+  <header class="bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white border-b border-emerald-800/80 shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-4">
+      
+      <!-- Brand & Title (Clean & Compact) -->
+      <div class="flex items-center space-x-2 shrink-0">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-emerald-600 flex items-center justify-center shadow-xs text-emerald-950 font-bold font-arabic text-lg select-none">
+          إ
+        </div>
+        <div class="flex items-baseline space-x-1.5">
+          <span class="text-base sm:text-lg font-bold tracking-tight text-amber-300 font-arabic leading-none">المُتَرْجِم</span>
+          <span class="text-xs font-semibold text-emerald-200 hidden md:inline">· Ihya' Ulumiddin</span>
+        </div>
+      </div>
+
+      <!-- Mode Switcher (Sleek Segmented Controls) -->
+      <nav class="flex p-0.5 bg-emerald-950/90 border border-emerald-700/60 rounded-xl text-xs font-semibold shrink-0">
+        <button onclick="setViewMode('reader')" id="btn-mode-reader" class="px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-white text-emerald-950 shadow-xs transition flex items-center space-x-1.5">
+          <span>📖</span>
+          <span>Kitab</span>
+        </button>
+        <button onclick="setViewMode('translate')" id="btn-mode-translate" class="px-2.5 sm:px-3.5 py-1.5 rounded-lg text-emerald-200 hover:text-white transition flex items-center space-x-1.5">
+          <span>✍️</span>
+          <span>Terjemah</span>
+        </button>
+        <button onclick="setViewMode('split')" id="btn-mode-split" class="hidden lg:flex px-3 py-1.5 rounded-lg text-emerald-200 hover:text-white transition items-center space-x-1.5">
+          <span>⇄</span>
+          <span>Belah</span>
+        </button>
+      </nav>
+
+      <!-- Right Actions (Clean Pills, No Text Overlap) -->
+      <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+        <!-- Alfiyyah Ibnu Malik -->
+        <button onclick="openAlfiyyahModal()" title="Kaidah Nahwu Alfiyyah Ibnu Malik & Ngalogat Sunda" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 border border-emerald-600/70 text-emerald-100 transition shadow-xs">
+          <span>📜</span>
+          <span class="hidden sm:inline">Alfiyyah</span>
+        </button>
+
+        <!-- Kamus Pesantren -->
+        <button onclick="openGlossaryModal()" title="Database Kamus Logat Pesantren" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 border border-emerald-600/70 text-emerald-100 transition shadow-xs">
+          <span>📖</span>
+          <span class="hidden sm:inline">Kamus</span>
+          <span id="nav-glossary-count" class="px-1.5 py-0.2 rounded-full bg-emerald-950 text-amber-300 text-[10px] font-mono font-bold">111</span>
+        </button>
+
+        <!-- Cari -->
+        <button onclick="openSearchModal()" title="Cari di 1.706 Halaman" class="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-800/80 hover:bg-emerald-700 text-amber-300 border border-emerald-600/70 transition shadow-xs text-xs font-semibold">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <span class="hidden sm:inline">Cari</span>
+        </button>
+
+        <!-- API Key -->
+        <button onclick="openApiKeyModal()" title="Setel Google Gemini API Key" class="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800/80 hover:bg-emerald-700 border border-emerald-600/70 text-emerald-100 transition shadow-xs">
+          <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+          </svg>
+          <span id="api-key-badge-text" class="hidden sm:inline">Kunci API</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 lg:p-6 overflow-y-auto custom-scroll">
+    
+    <div id="layout-grid" class="flex flex-col space-y-6">
+
+      <!-- ======================================================== -->
+      <!-- PANEL 1: PEMBACA KITAB IHYA (READER) -->
+      <!-- ======================================================== -->
+      <section id="panel-reader" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col transition-all">
+        
+        <!-- Reader Navigation Bar (Clean & Organized, Never Cramped) -->
+        <div class="bg-slate-50 border-b border-slate-200 px-3 sm:px-5 py-2.5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
+          
+          <!-- Dropdown Jilid & Kitab -->
+          <div class="flex items-center space-x-2 flex-1 min-w-0">
+            <select id="select-volume" onchange="onVolumeChange(true)" class="text-xs font-bold bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-xs text-slate-800 shrink-0 w-36 sm:w-44">
+              <option value="1">Jilid 1 (Ibadah)</option>
+              <option value="2">Jilid 2 (Adat)</option>
+              <option value="3">Jilid 3 (Muhlikat)</option>
+              <option value="4">Jilid 4 (Munjiyat)</option>
+            </select>
+
+            <select id="select-kitab" onchange="onKitabChange(true)" class="text-xs font-semibold bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-xs flex-1 min-w-0 text-slate-800 truncate">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <!-- Page Controls & Zoom -->
+          <div class="flex items-center justify-between md:justify-end space-x-2 shrink-0">
+            <!-- Zoom -->
+            <div class="flex items-center bg-white border border-slate-300 rounded-xl px-2 py-1 text-xs space-x-1 shadow-xs">
+              <button onclick="changeFontSize(-2)" title="Perkecil Tulisan" class="px-1 font-bold text-slate-500 hover:text-emerald-700">A-</button>
+              <span id="font-size-display" class="font-mono text-emerald-800 text-[11px] font-bold px-1">26px</span>
+              <button onclick="changeFontSize(+2)" title="Perbesar Tulisan" class="px-1 font-bold text-slate-500 hover:text-emerald-700">A+</button>
+            </div>
+
+            <!-- Page Flipping -->
+            <div class="flex items-center space-x-1 bg-white border border-slate-300 rounded-xl p-0.5 shadow-xs">
+              <button id="prev-page-btn" onclick="navigatePage(-1)" title="Halaman Sebelumnya" class="p-1.5 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-bold transition disabled:opacity-30">
+                ◀
+              </button>
+              <input type="number" id="input-page" value="1" min="1" max="361" onchange="loadPageManual()" onkeydown="if(event.key==='Enter') loadPageManual()" class="w-12 text-center text-xs font-bold bg-slate-50 rounded-lg py-1 focus:ring-1 focus:ring-emerald-500 focus:outline-none" />
+              <span id="page-total-label" class="text-slate-400 font-normal text-xs pr-1">/ 361</span>
+              <button id="next-page-btn" onclick="navigatePage(1)" title="Halaman Berikutnya" class="p-1.5 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-bold transition disabled:opacity-30">
+                ▶
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Book Page Display Area (Mushaf Style - Big & Spacious) -->
+        <div class="p-5 sm:p-8 mushaf-card flex-1 min-h-[350px]">
+          
+          <!-- Page Header Info -->
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-amber-200/60">
+            <div>
+              <span id="reader-kitab-badge" class="font-bold text-sm text-emerald-950">كتاب العلم</span>
+              <span id="reader-bab-title" class="text-xs text-slate-500 ml-2 italic"></span>
+            </div>
+            <span id="reader-volume-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+              Jilid 1 Hal 1
+            </span>
+          </div>
+
+          <!-- Arabic Text Box -->
+          <div id="reader-content-box" class="arabic-text text-[26px] text-slate-900 leading-[2.18] text-right select-text min-h-[220px]" style="word-spacing: 0.10em;">
+            <!-- Injected dynamically -->
+          </div>
+
+        </div>
+
+        <!-- Reader Action Bottom Bar -->
+        <div class="bg-slate-50 border-t border-slate-200 p-3 sm:px-6 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center space-x-2">
+            <label class="flex items-center space-x-2 text-xs font-semibold text-emerald-950 cursor-pointer select-none bg-emerald-50 hover:bg-emerald-100/80 px-3 py-1.5 rounded-lg border border-emerald-200 transition">
+              <input type="checkbox" id="auto-process-toggle" checked class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer" />
+              <span>⚡ Terjemahkan Otomatis saat Klik Paragraf</span>
+            </label>
+            <span class="text-xs text-slate-400 hidden lg:inline">|</span>
+            <p class="text-xs text-slate-500 italic hidden lg:block">
+              Klik salah satu paragraf di atas untuk langsung melihat syakal & 3 terjemahannya.
+            </p>
+          </div>
+
+          <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+            <button onclick="sendSelectionToEditor(true)" class="flex-1 sm:flex-initial px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-xs">
+              <svg class="w-4 h-4 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <span>⚡ Terjemahkan Teks Pilihan</span>
+            </button>
+
+            <button onclick="sendFullPageToEditor(true)" class="flex-1 sm:flex-initial px-3.5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-sm">
+              <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+              <span>⚡ Terjemahkan Halaman Ini</span>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- PANEL 2: PENERJEMAH & SYAKAL (TRANSLATOR WORKSPACE) -->
+      <!-- ======================================================== -->
+      <section id="panel-translate" class="space-y-6">
+
+        <!-- Input Box Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          
+          <div class="bg-slate-50 border-b border-slate-200 px-5 py-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+              <span>Kutipan Teks Arab yang Akan Diproses:</span>
+            </h2>
+
+            <!-- Quick Samples -->
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[11px] text-slate-400 mr-1 hidden sm:inline">Contoh:</span>
+              <button onclick="loadPreset('sample_1')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">طلب العلم</button>
+              <button onclick="loadPreset('sample_2')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">إنما الأعمال</button>
+              <button onclick="loadPreset('sample_3')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">العلم والعمل</button>
+              <button onclick="loadPreset('sample_4')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">قال تعالى</button>
+              <button onclick="loadPreset('sample_5')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">قد أفلح</button>
+              <button onclick="loadPreset('sample_6')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">كاد الفقر</button>
+              <button onclick="loadPreset('sample_7')" class="px-2 py-0.5 text-xs rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-medium transition">أربعة أرباع</button>
+            </div>
+          </div>
+
+          <div class="p-5 space-y-3">
+            <div class="relative">
+              <textarea id="arabic-input" rows="3" dir="rtl" placeholder="Ketik atau tempelkan penggalan teks Arab di sini... (atau kirim dari Pembaca Kitab di atas)" class="arabic-text text-xl sm:text-2xl w-full p-4 sm:p-5 bg-slate-50/70 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-600 focus:bg-white focus:outline-none transition text-slate-900 placeholder:text-slate-300 leading-[2.18]" style="word-spacing: 0.10em;"></textarea>
+              
+              <button onclick="clearInput()" title="Bersihkan" class="absolute bottom-3 left-3 p-1.5 text-slate-400 hover:text-rose-500 rounded-md hover:bg-slate-100 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <!-- Mode Toggle -->
+                <label class="flex items-center space-x-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-3 py-1.5 rounded-lg cursor-pointer transition shadow-xs select-none" title="Centang untuk respon kilat 2 detik tanpa catatan tarkib i'rab">
+                  <input type="checkbox" id="fast-mode-toggle" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer" />
+                  <span>⚡ Mode Cepat (Kilat)</span>
+                </label>
+
+                <span class="text-xs text-slate-400 font-mono hidden sm:inline">Ctrl+Enter untuk proses</span>
+              </div>
+
+              <button id="process-btn" onclick="processText()" class="px-6 py-3 bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition transform active:scale-95 flex items-center space-x-2">
+                <svg id="btn-icon-sparkle" class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                </svg>
+                <svg id="btn-spinner" class="hidden animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <span id="btn-text">Beri Syakal & Terjemahkan</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Output Results Container -->
+        <div id="output-section" class="hidden space-y-5">
+          
+          <!-- Output 1: Tashkil Arabic Text -->
+          <div class="bg-white rounded-2xl border border-emerald-200 shadow-sm overflow-hidden">
+            <div class="bg-emerald-50/80 border-b border-emerald-100 px-4 sm:px-5 py-3 flex flex-wrap items-center justify-between gap-2.5">
+              <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                <h3 class="text-xs sm:text-sm font-bold text-emerald-950">النَّصُّ بِالشَّكْلِ التَّامِّ (Teks Arab Bersyakal Sesuai Nahwu & Shorof)</h3>
+              </div>
+              
+              <!-- Spacing & Font Controls -->
+              <div class="flex items-center space-x-1.5 sm:space-x-2">
+                <!-- Spacing Presets -->
+                <div class="flex items-center bg-white border border-emerald-200/90 rounded-lg p-0.5 text-[11px] shadow-2xs">
+                  <button onclick="setArabicSpacing('compact')" id="spc-btn-compact" class="px-2 py-0.5 rounded font-medium text-slate-600 hover:text-emerald-800 transition" title="Jarak Rapat">Rapat</button>
+                  <button onclick="setArabicSpacing('ideal')" id="spc-btn-ideal" class="px-2 py-0.5 rounded font-bold bg-emerald-100 text-emerald-900 transition shadow-2xs" title="Jarak Pas (Rekomendasi)">Pas</button>
+                  <button onclick="setArabicSpacing('relaxed')" id="spc-btn-relaxed" class="px-2 py-0.5 rounded font-medium text-slate-600 hover:text-emerald-800 transition" title="Jarak Agak Renggang">Renggang</button>
+                </div>
+
+                <!-- Font Size Adjustment -->
+                <div class="flex items-center bg-white border border-emerald-200/90 rounded-lg p-0.5 text-xs shadow-2xs">
+                  <button onclick="adjustArabicFontSize(-2)" class="px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition" title="Perkecil Ukuran Huruf">A-</button>
+                  <span id="arabic-font-size-label" class="px-1.5 text-[11px] font-mono text-slate-500">26px</span>
+                  <button onclick="adjustArabicFontSize(2)" class="px-2 py-0.5 rounded font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition" title="Perbesar Ukuran Huruf">A+</button>
+                </div>
+
+                <!-- Copy Button -->
+                <button onclick="copyToClipboard('tashkil-result', this)" class="text-xs text-emerald-800 font-bold px-2.5 py-1 rounded-md bg-emerald-100 hover:bg-emerald-200 transition shadow-2xs">
+                  Salin Teks
+                </button>
+              </div>
+            </div>
+
+            <div class="px-4 sm:px-6 py-3.5 sm:py-4 bg-gradient-to-b from-white via-emerald-50/10 to-emerald-50/20">
+              <div id="tashkil-result" dir="rtl" class="arabic-text arabic-tashkil-box arabic-spacing-ideal text-[26px] text-emerald-950 text-right select-all" style="font-size: 26px;">
+                <!-- Result injected -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Output 2: Three Translation Tabs (Indo, Sunda Lemes, Logat Pesantren) -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            
+            <div class="bg-slate-50 border-b border-slate-200 px-3 sm:px-5 pt-2 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap space-x-1 sm:space-x-2">
+                <button onclick="switchTransTab('indo')" id="tab-btn-indo" class="pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 border-emerald-700 text-emerald-900 transition flex items-center space-x-1.5">
+                  <span>🇮🇩</span>
+                  <span>Indonesia</span>
+                </button>
+                <button onclick="switchTransTab('sunda_lemes')" id="tab-btn-sunda_lemes" class="pb-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition flex items-center space-x-1.5">
+                  <span>🍃</span>
+                  <span>Basa Sunda Lemes</span>
+                </button>
+                <button onclick="switchTransTab('sunda_logat')" id="tab-btn-sunda_logat" class="pb-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition flex items-center space-x-1.5">
+                  <span>🕌</span>
+                  <span>Logat Pasantren Sunda</span>
+                </button>
+                <button onclick="switchTransTab('sunda_klasik')" id="tab-btn-sunda_klasik" class="pb-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition flex items-center space-x-1.5">
+                  <span>📜</span>
+                  <span>Sunda Klasik (Makna Miring)</span>
+                  <span class="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold">Baru</span>
+                </button>
+              </div>
+
+              <button onclick="copyActiveTranslation(this)" class="mb-2 text-xs text-slate-700 font-bold px-2.5 py-1 rounded-md bg-slate-200 hover:bg-slate-300 transition">
+                Salin Terjemah
+              </button>
+            </div>
+
+            <!-- Pane Indo -->
+            <div id="trans-pane-indo" class="p-6 sm:p-7">
+              <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">Terjemah Kontekstual Indonesia:</p>
+              <p id="trans-text-indo" class="text-slate-800 text-base sm:text-lg leading-loose sm:leading-[2.2]"></p>
+            </div>
+
+            <!-- Pane Sunda Lemes -->
+            <div id="trans-pane-sunda_lemes" class="hidden p-6 sm:p-7">
+              <p class="text-xs text-emerald-700 font-semibold uppercase tracking-wider mb-2">Tarjamah Basa Sunda Lemes (Ragam Hormat):</p>
+              <p id="trans-text-sunda_lemes" class="text-slate-800 text-base sm:text-lg leading-loose sm:leading-[2.2] italic"></p>
+            </div>
+
+            <!-- Pane Sunda Logat Pesantren -->
+            <div id="trans-pane-sunda_logat" class="hidden p-6 sm:p-7 bg-amber-50/20">
+              <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-amber-200/60">
+                <div class="flex items-center space-x-2">
+                  <span class="text-xs text-amber-900 font-bold uppercase tracking-wider">Tarjamah Ngalogat Pasantren Sunda:</span>
+                </div>
+                
+                <!-- Script Selector Tab 3: Latin vs Pegon vs Dua-duana -->
+                <div class="flex items-center bg-white border border-amber-300 rounded-lg p-0.5 text-xs shadow-2xs">
+                  <button onclick="setLogatScript('latin')" id="logat-script-btn-latin" class="px-2.5 py-1 rounded font-bold bg-amber-200/90 text-amber-950 transition flex items-center space-x-1" title="Tampilkeun Aksara Latin">
+                    <span>🔤</span>
+                    <span>Latin Sunda</span>
+                  </button>
+                  <button onclick="setLogatScript('pegon')" id="logat-script-btn-pegon" class="px-2.5 py-1 rounded font-medium text-slate-600 hover:text-amber-950 transition flex items-center space-x-1" title="Tampilkeun Aksara Arab Pegon">
+                    <span>📜</span>
+                    <span>Aksara Pegon</span>
+                  </button>
+                  <button onclick="setLogatScript('dual')" id="logat-script-btn-dual" class="px-2.5 py-1 rounded font-medium text-slate-600 hover:text-amber-950 transition flex items-center space-x-1" title="Tampilkeun Dua-duana">
+                    <span>📖</span>
+                    <span>Dua-duana</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Container Latin -->
+              <div id="logat-view-latin" class="space-y-1">
+                <p id="trans-text-sunda_logat" class="text-amber-950 text-base sm:text-lg leading-loose sm:leading-[2.3] tracking-wide font-medium"></p>
+              </div>
+
+              <!-- Container Pegon -->
+              <div id="logat-view-pegon" class="hidden space-y-2" dir="rtl">
+                <p id="trans-text-sunda_logat_pegon" class="font-arabic text-amber-950 text-xl sm:text-2xl leading-[2.6] tracking-wide font-bold select-text text-right"></p>
+              </div>
+
+              <!-- Container Dual (Dua-duana) -->
+              <div id="logat-view-dual" class="hidden space-y-4">
+                <div class="p-4 rounded-xl bg-amber-100/50 border border-amber-200/90" dir="rtl">
+                  <div class="text-[11px] font-bold text-amber-800 mb-2.5 flex items-center justify-between" dir="ltr">
+                    <span class="flex items-center space-x-1"><span>📜</span><span>Naskah Arab Pegon Sunda:</span></span>
+                    <button onclick="copyToClipboard('trans-text-sunda_logat_pegon_dual', this)" class="text-[10px] text-amber-900 bg-white px-2 py-0.5 rounded border border-amber-300 hover:bg-amber-50">Salin Pegon</button>
+                  </div>
+                  <p id="trans-text-sunda_logat_pegon_dual" class="font-arabic text-amber-950 text-xl sm:text-2xl leading-[2.6] tracking-wide font-bold select-text text-right"></p>
+                </div>
+                <div class="p-4 rounded-xl bg-white border border-amber-200/80">
+                  <div class="text-[11px] font-bold text-slate-700 mb-2 flex items-center justify-between">
+                    <span class="flex items-center space-x-1"><span>🔤</span><span>Transkripsi Latin Sunda:</span></span>
+                    <button onclick="copyToClipboard('trans-text-sunda_logat_dual', this)" class="text-[10px] text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 hover:bg-slate-200">Salin Latin</button>
+                  </div>
+                  <p id="trans-text-sunda_logat_dual" class="text-amber-950 text-base sm:text-lg leading-loose sm:leading-[2.2] font-medium"></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pane Sunda Klasik (Makna Jenggot / Miring di Handap) -->
+            <div id="trans-pane-sunda_klasik" class="hidden p-4 sm:p-7 bg-[#fdfcf7] border-t border-amber-200/50">
+              
+              <!-- Toolbar Kontrol Tampilan Klasik -->
+              <div class="mb-5 p-3 rounded-xl bg-amber-50/80 border border-amber-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+                
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <span class="font-bold text-amber-950 flex items-center space-x-1">
+                    <span>📜</span>
+                    <span>Setelan Makna Miring:</span>
+                  </span>
+
+                  <!-- Sudut Kemiringan -->
+                  <div class="flex items-center bg-white border border-amber-300/80 rounded-lg p-0.5 shadow-2xs">
+                    <button onclick="setKlasikAngle(35)" id="angle-btn-35" class="px-2 py-0.5 rounded font-bold bg-amber-200/80 text-amber-950 transition" title="Miring Klasik 35 derajat">Miring 35°</button>
+                    <button onclick="setKlasikAngle(48)" id="angle-btn-48" class="px-2 py-0.5 rounded font-medium text-slate-600 hover:text-amber-900 transition" title="Miring Curam 48 derajat">Miring 48°</button>
+                    <button onclick="setKlasikAngle(0)" id="angle-btn-0" class="px-2 py-0.5 rounded font-medium text-slate-600 hover:text-amber-900 transition" title="Rata Bawah Tegak">Rata 0°</button>
+                  </div>
+
+                  <!-- Mode Aksara -->
+                  <div class="flex items-center bg-white border border-amber-300/80 rounded-lg p-0.5 shadow-2xs">
+                    <button onclick="setKlasikScript('latin')" id="script-btn-latin" class="px-2 py-0.5 rounded font-bold bg-amber-200/80 text-amber-950 transition" title="Aksara Latin Basa Sunda">Latin Sunda</button>
+                    <button onclick="setKlasikScript('pegon')" id="script-btn-pegon" class="px-2 py-0.5 rounded font-medium text-slate-600 hover:text-amber-900 transition" title="Aksara Pegon Sunda (Tulisan Arab Melayu/Sunda)">Pegon</button>
+                  </div>
+
+                  <!-- Susunan Baris Makna: Multi-baris (Rapi) vs 1 Baris -->
+                  <div class="flex items-center bg-white border border-amber-300/80 rounded-lg p-0.5 shadow-2xs">
+                    <button onclick="setKlasikLineMode('multi')" id="line-mode-btn-multi" class="px-2 py-0.5 rounded font-bold bg-amber-200/80 text-amber-950 transition flex items-center space-x-1" title="Pecah sababaraha baris supados rapih & henteu tabrakan">
+                      <span>📄</span>
+                      <span>Beberapa Baris</span>
+                    </button>
+                    <button onclick="setKlasikLineMode('single')" id="line-mode-btn-single" class="px-2 py-0.5 rounded font-medium text-slate-600 hover:text-amber-900 transition" title="Hiji baris manjang">1 Baris</button>
+                  </div>
+
+                  <!-- Toggle Simbol Tarkib -->
+                  <label class="flex items-center space-x-1.5 cursor-pointer font-medium text-slate-700 bg-white px-2 py-1 rounded-lg border border-amber-300/80 shadow-2xs">
+                    <input type="checkbox" id="toggle-klasik-symbol" checked onchange="toggleKlasikSymbols()" class="rounded text-amber-600 focus:ring-amber-500 w-3.5 h-3.5" />
+                    <span>Simbol Tarkib (م, خ, فا)</span>
+                  </label>
+                </div>
+
+                <!-- Kontrol Ukuran Huruf Makna Miring -->
+                <div class="flex items-center space-x-1.5">
+                  <div class="flex items-center bg-white border border-amber-300/80 rounded-lg p-0.5 shadow-2xs text-xs">
+                    <button onclick="adjustKlasikFontSize(-2)" class="px-2 py-0.5 rounded font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition" title="Perkecil Huruf Arab">A-</button>
+                    <span id="klasik-font-size-label" class="px-1.5 text-[11px] font-mono text-stone-500">26px</span>
+                    <button onclick="adjustKlasikFontSize(2)" class="px-2 py-0.5 rounded font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition" title="Perbesar Huruf Arab">A+</button>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Bingkai Kertas Kitab Klasik (Interlinear Flow) -->
+              <div class="p-5 sm:p-8 rounded-2xl bg-[#fbf8ed] border-2 border-amber-800/30 shadow-inner relative overflow-x-auto custom-scroll">
+                
+                <!-- Mistar Garis Merah Ganda Khas Kitab Kuning Kuno -->
+                <div class="border-t-2 border-b-2 border-red-800/40 py-6 px-4 min-w-[500px]" style="background-image: linear-gradient(to bottom, transparent 96%, rgba(185, 28, 28, 0.08) 96%); background-size: 100% 4.8rem;">
+                  
+                  <div id="klasik-interlinear-flow" dir="rtl" class="flex flex-wrap items-start justify-start gap-x-8 sm:gap-x-11 gap-y-12 sm:gap-y-16">
+                    <!-- Dynamic Interlinear Words injected here -->
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div class="mt-3 flex items-center justify-between text-[11px] text-slate-400">
+                <span class="flex items-center space-x-1">
+                  <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                  <span>Gaya Ngalogat / Makna Jenggot Sunda Klasik (Tradisi Kitab Kuning Salaf Pasundan)</span>
+                </span>
+                <span>Klik kata pikeun ningali rujukan nahwu</span>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Output 3: Analisis Kedudukan Nahwu & Shorof Lengkap -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-slate-50 via-amber-50/30 to-emerald-50/30 border-b border-slate-200 px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center space-x-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                <h3 class="text-xs sm:text-sm font-bold text-slate-900 flex items-center space-x-2">
+                  <span>إِعْرَابٌ وَصَرْفٌ وَتَرْكِيْبٌ</span>
+                  <span class="text-slate-400 font-normal">|</span>
+                  <span>Analisis Kedudukan Nahwu & Shorof Lengkap</span>
+                </h3>
+                <span id="tarkib-count-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200 shadow-2xs">
+                  0 Kata Dianalisis
+                </span>
+              </div>
+
+              <!-- Tools: Filter & View Mode Switcher -->
+              <div class="flex items-center space-x-2.5">
+                <!-- Search Filter -->
+                <div class="relative">
+                  <input type="text" id="tarkib-search-input" oninput="filterTarkibNotes()" placeholder="Cari kata / kedudukan / shorof..." class="text-xs px-2.5 py-1.5 pl-7 bg-white border border-slate-300 rounded-lg focus:ring-1 focus:ring-emerald-500 focus:outline-none w-44 sm:w-56 text-slate-800 placeholder:text-slate-400" />
+                  <span class="absolute left-2 top-1.5 text-xs text-slate-400">🔍</span>
+                </div>
+
+                <!-- View Mode: Tabel vs Kartu -->
+                <div class="flex items-center bg-slate-200/80 p-0.5 rounded-lg text-xs font-semibold">
+                  <button id="tarkib-view-table-btn" onclick="setTarkibViewMode('table')" class="px-2.5 py-1 rounded-md font-bold bg-white text-emerald-950 shadow-2xs transition flex items-center space-x-1">
+                    <span>📋</span>
+                    <span>Tabel</span>
+                  </button>
+                  <button id="tarkib-view-grid-btn" onclick="setTarkibViewMode('grid')" class="px-2.5 py-1 rounded-md font-medium text-slate-600 hover:text-slate-900 transition flex items-center space-x-1">
+                    <span>🗂️</span>
+                    <span>Kartu</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-4 sm:p-5">
+              <!-- Mode Tabel (Default) -->
+              <div id="tarkib-table-wrap" class="overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                      <th class="py-2.5 px-3 text-center w-10">No</th>
+                      <th class="py-2.5 px-4 text-right font-arabic text-sm">اللَّفْظُ (Lafadz)</th>
+                      <th class="py-2.5 px-3">Kedudukan Nahwu</th>
+                      <th class="py-2.5 px-3">Analisis Shorof & Wazan</th>
+                      <th class="py-2.5 px-3">I'rab & Tanda</th>
+                      <th class="py-2.5 px-2.5 text-center">Simbol</th>
+                      <th class="py-2.5 px-4">Makna Ngalogat Sunda & Catatan</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tarkib-table-body" class="divide-y divide-slate-100 bg-white text-slate-800">
+                    <!-- Populated dynamically by JS -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Mode Kartu Grid (Alternative) -->
+              <div id="tarkib-container" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- SEARCH MODAL (Quick Command Palette style) -->
+  <div id="search-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-start justify-center p-4 pt-16">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-5 shadow-2xl border border-slate-200 space-y-4 max-h-[80vh] flex flex-col">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+          <span>🔍</span>
+          <span>Pencarian Kata di 1.706 Halaman Ihya</span>
+        </h3>
+        <button onclick="closeSearchModal()" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="flex space-x-2">
+        <input type="text" id="modal-search-q" placeholder="Ketik kata Arab, contoh: طلب العلم, النية..." dir="rtl" class="arabic-text text-base flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none" onkeydown="if(event.key==='Enter') modalSearch()" />
+        <button onclick="modalSearch()" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow transition">
+          Cari
+        </button>
+      </div>
+
+      <div id="modal-search-results" class="flex-1 overflow-y-auto custom-scroll space-y-2 pr-1 min-h-[150px]">
+        <p class="text-xs text-slate-400 text-center py-10 italic">Masukkan kata bahasa Arab untuk mencari di seluruh jilid dan kitab.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- API KEY MODAL -->
+  <div id="api-key-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+          <span>🔑</span>
+          <span>Pengaturan Google Gemini API Key</span>
+        </h3>
+        <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-600 leading-relaxed">
+        API Key dibutuhkan AI untuk memproses penggalan kitab secara live (syakal Nahwu-Shorof dan 3 varian terjemahan). Kunci disimpan aman di file lokal komputer Anda.
+      </p>
+
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="text-xs font-semibold text-slate-700">Gemini API Key (Mendukung Multi-Kunci):</label>
+          <span class="text-[10px] text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Rotasi Otomatis</span>
+        </div>
+        <textarea id="input-api-key" rows="2" placeholder="AIzaSy... (tempelkan satu atau beberapa kunci dipisah koma/baris baru)" class="w-full text-xs font-mono p-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+      </div>
+
+      <div id="api-key-test-status" class="hidden text-xs p-2.5 rounded-lg border"></div>
+
+      <div class="text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-1">
+        <div class="font-bold text-slate-800">💡 Tips Kuota Gratis Berlipat Ganda:</div>
+        <p class="leading-relaxed">
+          Akun gratis Google AI Studio membatasi 20 request/hari per project. Anda bisa memasukkan <b>beberapa kunci sekaligus</b> (misal kunci <i>Database Kitab</i> dan kunci <i>Default Gemini Project</i>) dipisah tanda koma. Jika satu kunci mencapai limit hariannya, sistem akan <b>otomatis beralih ke kunci berikutnya</b> tanpa henti!
+        </p>
+        <a href="https://aistudio.google.com/apikey" target="_blank" class="text-emerald-700 font-bold underline hover:text-emerald-900 inline-block mt-0.5">Buka Google AI Studio (aistudio.google.com/apikey)</a>
+      </div>
+
+      <div class="flex items-center justify-between pt-2">
+        <button onclick="testApiKey()" id="btn-test-key" class="px-3.5 py-2 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg transition flex items-center space-x-1">
+          <span>🔍</span>
+          <span>Tes Koneksi</span>
+        </button>
+        <div class="flex space-x-2">
+          <button onclick="closeApiKeyModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition">Batal</button>
+          <button onclick="saveApiKey()" class="px-5 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-700 rounded-lg shadow transition">Simpan Kunci</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 3: KAMUS & DATABASE LOGAT PESANTREN SUNDA -->
+  <!-- ======================================================== -->
+  <div id="glossary-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 max-h-[92vh] flex flex-col space-y-4">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-lg shadow-xs">
+            📖
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center space-x-2">
+              <span>Database Kamus Logat Pesantren Sunda</span>
+              <span id="modal-glossary-badge" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-mono font-bold">Memuat...</span>
+            </h3>
+            <p class="text-[11px] text-slate-500">Kosa kata dan kaidah nahwu di bawah ini otomatis dirujuk oleh AI saat menerjemahkan.</p>
+          </div>
+        </div>
+        <button onclick="closeGlossaryModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Action Toolbar (Search + Category Filter + Add Button) -->
+      <div class="flex flex-wrap items-center justify-between gap-2.5">
+        <div class="flex-1 min-w-[200px] relative">
+          <input type="text" id="glossary-search-input" oninput="debounceGlossarySearch()" placeholder="Cari kosa kata Arab / Sunda / Indo..." class="w-full text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+          <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+
+        <select id="glossary-category-filter" onchange="loadGlossary()" class="text-xs bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <option value="">Semua Kategori (92 Entri)</option>
+          <option value="nahwu_khabar">Khabar (Mufrad & Syibhul Jumlah)</option>
+          <option value="nahwu_nawasikh">Nawasikh (Kana, Inna, Zhanna, Kaada)</option>
+          <option value="nahwu_maful">Maf'ul Bih (Ka vs Kana)</option>
+          <option value="nahwu_haraf_jar">Haraf Jar & Maknanya (Alfiyyah)</option>
+          <option value="nahwu_marker">Kaidah Pokok Nahwu</option>
+          <option value="tasawwuf">Tasawwuf & Ihya</option>
+          <option value="umum">Umum / Santri</option>
+        </select>
+
+        <button onclick="toggleAddGlossaryForm()" id="btn-toggle-add-glossary" class="px-3.5 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-700 rounded-xl transition shadow-xs flex items-center space-x-1.5">
+          <span>➕</span>
+          <span>Tambah Kosa Kata</span>
+        </button>
+      </div>
+
+      <!-- Collapsible Form: Tambah Kosa Kata Baru -->
+      <div id="add-glossary-form-panel" class="hidden bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold text-emerald-950 flex items-center space-x-1.5">
+            <span>✨</span>
+            <span>Tambah / Perbarui Kosa Kata Pesantren ke Database SQLite:</span>
+          </h4>
+          <span class="text-[10px] text-emerald-800 italic">Disimpan permanen di database lokal</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Lafadz Arab (Kitab): *</label>
+            <input type="text" id="input-gloss-arabic" dir="rtl" placeholder="Contoh: القلب atau طلب العلم" class="arabic-text text-base w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Kedudukan Nahwu:</label>
+            <select id="input-gloss-role" class="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              <option value="umum">Umum (Istilah/Isim)</option>
+              <option value="mubtada">Mubtada' (Penanda: Ari)</option>
+              <option value="khabar_mufrad">Khabar Mufrad (Penanda: eta)</option>
+              <option value="khabar_syibhul_jumlah">Khabar Jar-Majrur/Zharaf (Penanda: eta tetep)</option>
+              <option value="fail">Fa'il Pelaku (Penanda: saha / naon)</option>
+              <option value="maful_bih_benda">Maf'ul Bih Benda Mati (Penanda: kana)</option>
+              <option value="maful_bih_hidup">Maf'ul Bih Orang/Makhluk (Penanda: ka)</option>
+              <option value="nawasikh_kana">Amil Kana wa Akhwatuha</option>
+              <option value="nawasikh_inna">Amil Inna wa Akhwatuha</option>
+              <option value="nawasikh_zhanna">Amil Zhanna wa Akhwatuha</option>
+              <option value="nawasikh_kaada">Amil Kaada wa Akhwatuha</option>
+              <option value="haraf_jar">Haraf Jar (Kontekstual)</option>
+              <option value="hal">Hal Kaadaan (Penanda: halna / bari)</option>
+              <option value="maful_liajlih">Maf'ul Liajlih (Penanda: karana)</option>
+              <option value="tamyiz">Tamyiz (Penanda: apana)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Penanda Logat (Opsional):</label>
+            <input type="text" id="input-gloss-marker" placeholder="Contoh: Ari / eta / eta tetep / kana / ka" class="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Kategori:</label>
+            <select id="input-gloss-cat" class="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              <option value="tasawwuf">Tasawwuf & Ihya</option>
+              <option value="nahwu_khabar">Khabar (Mufrad & Syibhul Jumlah)</option>
+              <option value="nahwu_nawasikh">Nawasikh (Kana, Inna, Zhanna, Kaada)</option>
+              <option value="nahwu_maful">Maf'ul Bih (Ka vs Kana)</option>
+              <option value="nahwu_haraf_jar">Haraf Jar & Maknanya</option>
+              <option value="nahwu_marker">Kaidah Pokok Nahwu</option>
+              <option value="umum">Umum</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block font-semibold text-slate-700 mb-1">Arti Logat Pasantren Sunda (Makna Gandul): *</label>
+            <input type="text" id="input-gloss-sunda" placeholder="Contoh: hate / angen-angen / sipat hayang kapuji" class="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Arti Bahasa Indonesia:</label>
+            <input type="text" id="input-gloss-indo" placeholder="Contoh: hati nurani / riya" class="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Catatan Tambahan:</label>
+            <input type="text" id="input-gloss-notes" placeholder="Contoh: Kitab Ajaibul Qalb" class="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-1">
+          <button onclick="toggleAddGlossaryForm()" class="px-3.5 py-1.5 text-xs text-slate-600 hover:bg-slate-200/70 rounded-lg transition">Batal</button>
+          <button onclick="saveGlossaryItem()" class="px-4 py-1.5 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-700 rounded-lg shadow-xs transition">Simpan Kosa Kata</button>
+        </div>
+      </div>
+
+      <!-- List of Glossary Items (Scrollable) -->
+      <div id="glossary-items-container" class="flex-1 overflow-y-auto custom-scroll border border-slate-200 rounded-xl divide-y divide-slate-100 min-h-[260px] p-2 space-y-2 bg-slate-50/50">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Footer Info & Close -->
+      <div class="flex items-center justify-between pt-2 border-t border-slate-200 text-xs">
+        <span class="text-slate-500">Database otomatis dirujuk AI saat klik <b>Beri Syakal & Terjemahkan</b>.</span>
+        <button onclick="closeGlossaryModal()" class="px-5 py-2 font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">Tutup</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 4: MAKTABAH ALFIYYAH IBNU MALIK & MULTI-SYARAH -->
+  <!-- ======================================================== -->
+  <div id="alfiyyah-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-5xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 max-h-[94vh] flex flex-col space-y-3.5">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-xl shadow-xs">
+            📜
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h3 class="text-sm sm:text-base font-bold text-slate-900">Maktabah Alfiyyah Ibnu Malik</h3>
+              <span id="modal-alfiyyah-badge" class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-mono font-bold">25 Bab • Bait 1-1004</span>
+            </div>
+            <p class="text-[11px] text-slate-500">Akses multi-versi: Syarah Ibnu 'Aqil, Audhah al-Masalik, Matan Murni, sareng Kaidah Logat Pasantren Sunda pikeun Kitab Ihya.</p>
+          </div>
+        </div>
+        <button onclick="closeAlfiyyahModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Version Selector Tabs -->
+      <div class="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl border border-slate-200/80 text-xs">
+        <button onclick="switchAlfiyyahVersion('ibnu_aqil')" id="tab-ver-ibnu_aqil" class="flex-1 py-1.5 px-3 rounded-lg font-semibold transition flex items-center justify-center space-x-1.5 bg-white text-emerald-800 shadow-xs">
+          <span>🌟</span>
+          <span>Syarah Ibnu 'Aqil</span>
+        </button>
+        <button onclick="switchAlfiyyahVersion('audhah')" id="tab-ver-audhah" class="flex-1 py-1.5 px-3 rounded-lg font-semibold text-slate-600 hover:text-slate-900 transition flex items-center justify-center space-x-1.5">
+          <span>📖</span>
+          <span>Audhah al-Masalik</span>
+        </button>
+        <button onclick="switchAlfiyyahVersion('matan')" id="tab-ver-matan" class="flex-1 py-1.5 px-3 rounded-lg font-semibold text-slate-600 hover:text-slate-900 transition flex items-center justify-center space-x-1.5">
+          <span>📜</span>
+          <span>Matan Murni (الخلاصة)</span>
+        </button>
+        <button onclick="switchAlfiyyahVersion('sunda_logat')" id="tab-ver-sunda_logat" class="flex-1 py-1.5 px-3 rounded-lg font-semibold text-slate-600 hover:text-slate-900 transition flex items-center justify-center space-x-1.5">
+          <span>🌿</span>
+          <span>Makna Gandul Sunda & Ihya</span>
+        </button>
+      </div>
+
+      <!-- Filter & Search Toolbar -->
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 text-xs">
+        <!-- Chapter Select -->
+        <div class="sm:col-span-5">
+          <select id="alfiyyah-chapter-select" onchange="onChapterSelectChange()" class="w-full text-xs py-2 px-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium">
+            <option value="all">📚 Sadaya Bab (Bait 1 - 1004)</option>
+          </select>
+        </div>
+
+        <!-- Search Input -->
+        <div class="sm:col-span-5 relative">
+          <input type="text" id="alfiyyah-search-input" oninput="filterAlfiyyahCards()" placeholder="Cari bab nahwu, bait nadhom, lafadz Arab, atau kaidah Sunda..." class="w-full text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+          <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+
+        <!-- Jump to Bayt -->
+        <div class="sm:col-span-2 flex space-x-1">
+          <input type="number" id="alfiyyah-jump-bayt" min="1" max="1004" placeholder="Bait..." class="w-full text-xs px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none text-center font-mono" />
+          <button onclick="jumpToBayt()" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-semibold transition text-xs">Go</button>
+        </div>
+      </div>
+
+      <!-- Container Cards -->
+      <div id="alfiyyah-list-container" class="flex-1 overflow-y-auto custom-scroll space-y-4 pr-1">
+        <div class="text-center py-12 text-slate-400 text-xs">Memuat kaidah perpustakaan Alfiyyah...</div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+        <div id="alfiyyah-footer-info" class="flex items-center space-x-2">
+          <span>Total Bab: <strong id="footer-ch-count" class="text-slate-800">25</strong></span>
+          <span>•</span>
+          <span>Rentang Bait: <strong class="text-slate-800">1 - 1004</strong></span>
+        </div>
+        <button onclick="closeAlfiyyahModal()" class="px-5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden max-w-sm px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold flex items-center space-x-2 transition-all"></div>
+
+  <!-- PRE-BAKED COMPLETE 40 KITABS DATA (Guarantees zero blank dropdowns!) -->
+  <script>
+    const DEFAULT_KITABS = [
+      { id: 1, vol: 1, title: "1. كتاب العلم (Kitab Ilmu)", start: 4, end: 88 },
+      { id: 2, vol: 1, title: "2. كتاب قواعد العقائد (Kaidah Akidah)", start: 89, end: 124 },
+      { id: 3, vol: 1, title: "3. كتاب أسرار الطهارة (Rahasia Thaharah)", start: 125, end: 144 },
+      { id: 4, vol: 1, title: "4. كتاب أسرار الصلاة (Rahasia Shalat)", start: 145, end: 207 },
+      { id: 5, vol: 1, title: "5. كتاب أسرar الزكاة (Rahasia Zakat)", start: 208, end: 229 },
+      { id: 6, vol: 1, title: "6. كتاب أسرار الصوم (Rahasia Puasa)", start: 230, end: 238 },
+      { id: 7, vol: 1, title: "7. كتاب أسرار الحج (Rahasia Haji)", start: 239, end: 271 },
+      { id: 8, vol: 1, title: "8. كتاب آداب تلاوة القرآن (Adab Tilawah)", start: 272, end: 292 },
+      { id: 9, vol: 1, title: "9. كتاب الأذكار والدعوات (Dzikir & Doa)", start: 293, end: 328 },
+      { id: 10, vol: 1, title: "10. كتاب ترتيب الأوراد (Tertib Wirid Malam)", start: 329, end: 361 },
+
+      { id: 11, vol: 2, title: "11. كتاب آداب الأكل (Adab Makan)", start: 2, end: 20 },
+      { id: 12, vol: 2, title: "12. كتاب آداب النكاح (Adab Nikah)", start: 21, end: 59 },
+      { id: 13, vol: 2, title: "13. كتاب آداب الكسب (Adab Usaha/Kasab)", start: 60, end: 87 },
+      { id: 14, vol: 2, title: "14. كتاب الحلال والحرام (Halal & Haram)", start: 88, end: 156 },
+      { id: 15, vol: 2, title: "15. كتاب آداب الصحبة (Adab Ukhuwah)", start: 157, end: 220 },
+      { id: 16, vol: 2, title: "16. كتاب آداب العزلة (Adab Menyendiri/Uzlah)", start: 221, end: 243 },
+      { id: 17, vol: 2, title: "17. كتاب آداب السفر (Adab Bepergian/Safar)", start: 244, end: 267 },
+      { id: 18, vol: 2, title: "18. كتاب السماع والوجد (Sama' & Nyanyian)", start: 268, end: 305 },
+      { id: 19, vol: 2, title: "19. كتاب الأمر بالمعروف (Amar Ma'ruf)", start: 306, end: 356 },
+      { id: 20, vol: 2, title: "20. كتاب آداب المعيشة (Akhlak Kenabian)", start: 357, end: 387 },
+
+      { id: 21, vol: 3, title: "21. كتاب عجائب القلب (Keajaiban Hati)", start: 2, end: 47 },
+      { id: 22, vol: 3, title: "22. كتاب رياضة النفس (Riyadhah Jiwa)", start: 48, end: 78 },
+      { id: 23, vol: 3, title: "23. كتاب كسر الشهوتين (Mematahkan Syahwat)", start: 79, end: 106 },
+      { id: 24, vol: 3, title: "24. كتاب آفات اللسان (Bahaya Lisan)", start: 107, end: 163 },
+      { id: 25, vol: 3, title: "25. كتاب ذم الغضب والحسد (Marah & Dengki)", start: 164, end: 200 },
+      { id: 26, vol: 3, title: "26. كتاب ذم الدنيا (Tercelanya Dunia)", start: 201, end: 230 },
+      { id: 27, vol: 3, title: "27. كتاب ذم البخل وحب المال (Bakhil & Cinta Harta)", start: 231, end: 273 },
+      { id: 28, vol: 3, title: "28. كتاب ذم الجاه والرياء (Gila Jabatan & Riya')", start: 274, end: 335 },
+      { id: 29, vol: 3, title: "29. كتاب ذم الكبر والعجب (Sombong & Ujub)", start: 336, end: 377 },
+      { id: 30, vol: 3, title: "30. كتاب ذم الغرور (Terperdaya/Ghurur)", start: 378, end: 414 },
+
+      { id: 31, vol: 4, title: "31. كتاب التوبة (Hakikat Taubat)", start: 2, end: 59 },
+      { id: 32, vol: 4, title: "32. كتاب الصبر والشكر (Sabar & Syukur)", start: 60, end: 141 },
+      { id: 33, vol: 4, title: "33. كتاب الخوف والرجاء (Takut & Harap)", start: 142, end: 188 },
+      { id: 34, vol: 4, title: "34. كتاب الفقر والزهد (Faqir & Zuhud)", start: 189, end: 242 },
+      { id: 35, vol: 4, title: "35. كتاب التوحيد والتوكل (Tauhid & Tawakkal)", start: 243, end: 292 },
+      { id: 36, vol: 4, title: "36. كتاب المحبة والشوق (Cinta & Rindu Allah)", start: 293, end: 360 },
+      { id: 37, vol: 4, title: "37. كتاب النية والإخلاص (Niat & Ikhlas)", start: 361, end: 392 },
+      { id: 38, vol: 4, title: "38. كتاب المراقبة والمحاسبة (Muraqabah)", start: 393, end: 422 },
+      { id: 39, vol: 4, title: "39. كتاب التفكر (Hakikat Tafakkur)", start: 423, end: 447 },
+      { id: 40, vol: 4, title: "40. كتاب ذكر الموت (Mengingat Kematian)", start: 448, end: 547 }
+    ];
+
+    let kitabsData = DEFAULT_KITABS;
+    let currentActiveTransTab = 'indo';
+    let currentFontSize = 26;
+    let currentViewMode = 'reader';
+
+    const volumeRanges = {
+      1: { min: 1, max: 361 },
+      2: { min: 2, max: 387 },
+      3: { min: 2, max: 414 },
+      4: { min: 2, max: 547 }
+    };
+
+    // On Load (Optimized for Instant Startup)
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Immediately populate kitabs dropdown from pre-baked local data (0ms)
+      populateKitabsDropdown(1);
+      initApiKey();
+
+      // 2. Fetch initial page and server status in parallel (non-blocking)
+      Promise.all([
+        loadPage(1, 1),
+        checkServerStatus()
+      ]);
+
+      // 3. Shortcut Ctrl+Enter
+      document.getElementById('arabic-input').addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          processText();
+        }
+      });
+    });
+
+    // View Mode Switcher
+    function setViewMode(mode) {
+      currentViewMode = mode;
+      const panelReader = document.getElementById('panel-reader');
+      const panelTranslate = document.getElementById('panel-translate');
+      const grid = document.getElementById('layout-grid');
+
+      const btnReader = document.getElementById('btn-mode-reader');
+      const btnTranslate = document.getElementById('btn-mode-translate');
+      const btnSplit = document.getElementById('btn-mode-split');
+
+      // Reset button styles
+      [btnReader, btnTranslate, btnSplit].forEach(b => {
+        b.className = "px-3 sm:px-4 py-1.5 rounded-lg text-emerald-200 hover:text-white transition flex items-center space-x-1.5";
+      });
+
+      if (mode === 'reader') {
+        btnReader.className = "px-3 sm:px-4 py-1.5 rounded-lg bg-white text-emerald-950 shadow-sm font-bold transition flex items-center space-x-1.5";
+        panelReader.classList.remove('hidden');
+        panelTranslate.classList.add('hidden');
+        grid.className = "flex flex-col space-y-6";
+      } else if (mode === 'translate') {
+        btnTranslate.className = "px-3 sm:px-4 py-1.5 rounded-lg bg-white text-emerald-950 shadow-sm font-bold transition flex items-center space-x-1.5";
+        panelTranslate.classList.remove('hidden');
+        panelReader.classList.add('hidden');
+        grid.className = "flex flex-col space-y-6";
+      } else {
+        // Split view
+        btnSplit.className = "px-3 sm:px-4 py-1.5 rounded-lg bg-white text-emerald-950 shadow-sm font-bold transition flex items-center space-x-1.5";
+        panelReader.classList.remove('hidden');
+        panelTranslate.classList.remove('hidden');
+        grid.className = "grid grid-cols-1 lg:grid-cols-2 gap-6 items-start";
+      }
+    }
+
+    // Font Sizing
+    function changeFontSize(delta) {
+      currentFontSize = Math.min(38, Math.max(18, currentFontSize + delta));
+      const box = document.getElementById('reader-content-box');
+      box.style.fontSize = `${currentFontSize}px`;
+      box.style.lineHeight = `${Math.round(currentFontSize * 2.3)}px`;
+      document.getElementById('font-size-display').textContent = `${currentFontSize}px`;
+    }
+
+    // Dropdown population
+    function populateKitabsDropdown(vol) {
+      const kitabSelect = document.getElementById('select-kitab');
+      kitabSelect.innerHTML = '';
+
+      const filtered = kitabsData.filter(k => k.vol === vol);
+      filtered.forEach(k => {
+        const opt = document.createElement('option');
+        opt.value = k.id;
+        opt.textContent = `${k.title} (Hal ${k.start} - ${k.end})`;
+        opt.dataset.start = k.start;
+        opt.dataset.end = k.end;
+        kitabSelect.appendChild(opt);
+      });
+
+      // Update input range
+      const range = volumeRanges[vol] || { min: 1, max: 361 };
+      const pageInput = document.getElementById('input-page');
+      pageInput.min = range.min;
+      pageInput.max = range.max;
+      document.getElementById('page-total-label').textContent = `/ ${range.max}`;
+    }
+
+    async function onVolumeChange(shouldLoad = true) {
+      const vol = parseInt(document.getElementById('select-volume').value);
+      populateKitabsDropdown(vol);
+
+      if (shouldLoad) {
+        const filtered = kitabsData.filter(k => k.vol === vol);
+        if (filtered.length > 0) {
+          const firstKitab = filtered[0];
+          document.getElementById('input-page').value = firstKitab.start;
+          await loadPage(vol, firstKitab.start);
+        }
+      }
+    }
+
+    async function onKitabChange(shouldLoad = true) {
+      const vol = parseInt(document.getElementById('select-volume').value);
+      const kitabSelect = document.getElementById('select-kitab');
+      const selectedOpt = kitabSelect.options[kitabSelect.selectedIndex];
+      if (selectedOpt && shouldLoad) {
+        const startPage = parseInt(selectedOpt.dataset.start || 1);
+        document.getElementById('input-page').value = startPage;
+        await loadPage(vol, startPage);
+      }
+    }
+
+    // Navigation
+    function navigatePage(delta) {
+      const vol = parseInt(document.getElementById('select-volume').value);
+      const currentPage = parseInt(document.getElementById('input-page').value);
+      const range = volumeRanges[vol] || { min: 1, max: 361 };
+
+      let targetPage = currentPage + delta;
+      if (targetPage < range.min) targetPage = range.min;
+      if (targetPage > range.max) targetPage = range.max;
+
+      document.getElementById('input-page').value = targetPage;
+      loadPage(vol, targetPage);
+    }
+
+    function loadPageManual() {
+      const vol = parseInt(document.getElementById('select-volume').value);
+      const page = parseInt(document.getElementById('input-page').value);
+      loadPage(vol, page);
+    }
+
+    // Main Page Loader
+    async function loadPage(vol, page) {
+      const box = document.getElementById('reader-content-box');
+      box.innerHTML = `<p class="text-slate-400 text-center py-16 text-sm italic animate-pulse">Memuat teks Jilid ${vol} Halaman ${page}...</p>`;
+
+      try {
+        const res = await fetch(`/api/page?vol=${vol}&page=${page}`);
+        if (!res.ok) throw new Error("Halaman tidak ditemukan.");
+        const data = await res.json();
+
+        // Update actual page number returned
+        document.getElementById('input-page').value = data.volume_page;
+        document.getElementById('reader-volume-badge').textContent = `Jilid ${data.volume} Hal ${data.volume_page}`;
+        document.getElementById('reader-kitab-badge').textContent = data.kitab_title || '';
+        document.getElementById('reader-bab-title').textContent = data.bab_title || data.fasal_title || '';
+
+        // Match dropdown kitab
+        if (data.kitab_id) {
+          document.getElementById('select-kitab').value = data.kitab_id;
+        }
+
+        // Render clean paragraphs
+        const rawContent = data.content_clean || '';
+        const paragraphs = rawContent.split(/\n+/).filter(p => p.trim().length > 0);
+
+        box.innerHTML = '';
+        paragraphs.forEach(pText => {
+          const pElem = document.createElement('p');
+          pElem.className = "mb-3.5 sm:mb-4 hover:bg-amber-100/70 p-2.5 sm:p-3 rounded-xl transition cursor-pointer select-text border border-transparent hover:border-amber-300 leading-[2.18] text-slate-900";
+          pElem.style.wordSpacing = "0.10em";
+          pElem.title = "Klik untuk memproses/menerjemahkan paragraf ini";
+          pElem.textContent = pText;
+          pElem.onclick = () => {
+            document.getElementById('arabic-input').value = pText;
+            const autoProcess = document.getElementById('auto-process-toggle') ? document.getElementById('auto-process-toggle').checked : true;
+            if (autoProcess) {
+              if (currentViewMode === 'reader') {
+                setViewMode('translate');
+              }
+              processText();
+            } else {
+              showToast("Paragraf disalin ke kotak penerjemah.", "info");
+              if (currentViewMode === 'reader') {
+                setViewMode('translate');
+              }
+            }
+          };
+          box.appendChild(pElem);
+        });
+
+        // Update button states
+        const range = volumeRanges[vol] || { min: 1, max: 361 };
+        document.getElementById('prev-page-btn').disabled = (data.volume_page <= range.min);
+        document.getElementById('next-page-btn').disabled = (data.volume_page >= range.max);
+
+      } catch (err) {
+        box.innerHTML = `<p class="text-rose-500 text-center py-16 text-sm font-semibold">Gagal memuat: ${err.message}. Pastikan server berjalan.</p>`;
+      }
+    }
+
+    // Send to editor
+    function sendFullPageToEditor(autoProcess = false) {
+      const box = document.getElementById('reader-content-box');
+      const text = box.innerText.trim();
+      if (text) {
+        document.getElementById('arabic-input').value = text;
+        if (currentViewMode === 'reader') setViewMode('translate');
+        if (autoProcess) {
+          processText();
+        } else {
+          showToast("Seluruh halaman disalin ke penerjemah.", "success");
+        }
+      }
+    }
+
+    function sendSelectionToEditor(autoProcess = false) {
+      const sel = window.getSelection().toString().trim();
+      if (sel) {
+        document.getElementById('arabic-input').value = sel;
+        if (currentViewMode === 'reader') setViewMode('translate');
+        if (autoProcess) {
+          processText();
+        } else {
+          showToast("Teks pilihan disalin ke penerjemah.", "success");
+        }
+      } else {
+        sendFullPageToEditor(autoProcess);
+      }
+    }
+
+    // Search Modal
+    function openSearchModal() {
+      document.getElementById('search-modal').classList.remove('hidden');
+      document.getElementById('modal-search-q').focus();
+    }
+
+    function closeSearchModal() {
+      document.getElementById('search-modal').classList.add('hidden');
+    }
+
+    async function modalSearch() {
+      const q = document.getElementById('modal-search-q').value.trim();
+      if (!q) return;
+
+      const container = document.getElementById('modal-search-results');
+      container.innerHTML = `<p class="text-xs text-emerald-700 animate-pulse text-center py-8">Mencari di 1.706 halaman...</p>`;
+
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=25`);
+        const results = await res.json();
+
+        if (!results.length) {
+          container.innerHTML = `<p class="text-xs text-slate-500 text-center py-8">Tidak ada hasil untuk "${q}".</p>`;
+          return;
+        }
+
+        container.innerHTML = '';
+        results.forEach(r => {
+          const item = document.createElement('div');
+          item.className = "p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 transition cursor-pointer text-xs space-y-1";
+          item.innerHTML = `
+            <div class="flex items-center justify-between font-bold text-emerald-950">
+              <span>Jilid ${r.volume}, Halaman ${r.volume_page}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">${r.kitab_title || ''}</span>
+            </div>
+            <div class="arabic-text text-sm text-slate-800 text-right leading-relaxed">${r.excerpt}</div>
+          `;
+          item.onclick = async () => {
+            closeSearchModal();
+            document.getElementById('select-volume').value = r.volume;
+            populateKitabsDropdown(r.volume);
+            document.getElementById('input-page').value = r.volume_page;
+            await loadPage(r.volume, r.volume_page);
+
+            const cleanSnippet = r.excerpt.replace(/<[^>]+>/g, '');
+            document.getElementById('arabic-input').value = cleanSnippet;
+            showToast(`Membuka Jilid ${r.volume} Hal ${r.volume_page}...`, 'info');
+          };
+          container.appendChild(item);
+        });
+
+      } catch (err) {
+        container.innerHTML = `<p class="text-xs text-rose-500 text-center py-8">Gagal mencari: ${err.message}</p>`;
+      }
+    }
+
+    // Presets
+    function loadPreset(key) {
+      const presets = {
+        sample_1: "طلب العلم فريضة على كل مسلم",
+        sample_2: "إنما الأعمال بالنيات وإنما لكل امرئ ما نوى",
+        sample_3: "العلم بلا عمل جنون والعمل بغير علم لا يكون",
+        sample_4: "قال تعالى يرفع الله الذين آمنوا منكم",
+        sample_5: "قد أفلح المؤمنون",
+        sample_6: "كاد الفقر أن يكون كفرا",
+        sample_7: "وقد أسسته على أربعة أرباع وهي ربع العبادات وربع العادات وربع المهلكات وربع المنجيات" 
+      };
+      if (presets[key]) {
+        document.getElementById('arabic-input').value = presets[key];
+        processText();
+      }
+    }
+
+    function clearInput() {
+      document.getElementById('arabic-input').value = '';
+      document.getElementById('output-section').classList.add('hidden');
+    }
+
+    // Main AI Process
+    async function processText() {
+      const text = document.getElementById('arabic-input').value.trim();
+      if (!text) {
+        showToast("Silakan masukkan teks Arab terlebih dahulu.", "warning");
+        return;
+      }
+
+      const apiKey = localStorage.getItem('gemini_api_key') || null;
+      const isPreset = (text.includes("طلب العلم") || text.includes("إنما الأعمال") || text.includes("العلم بلا عمل"));
+      if (!apiKey && !serverHasApiKey && !isPreset) {
+        showToast("Masukkan Google Gemini API Key Anda untuk memproses penggalan kitab.", "warning");
+        openApiKeyModal();
+        return;
+      }
+
+      const btn = document.getElementById('process-btn');
+      const btnText = document.getElementById('btn-text');
+      const btnIcon = document.getElementById('btn-icon-sparkle');
+      const btnSpinner = document.getElementById('btn-spinner');
+
+      btn.disabled = true;
+      btnText.textContent = "Memproses Nahwu & Terjemah...";
+      btnIcon.classList.add('hidden');
+      btnSpinner.classList.remove('hidden');
+
+      try {
+        const fastMode = document.getElementById('fast-mode-toggle') ? document.getElementById('fast-mode-toggle').checked : false;
+        const res = await fetch('/api/process', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: text,
+            api_key: apiKey,
+            model_name: "gemini-3.5-flash",
+            fast_mode: fastMode
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          if (res.status === 401) {
+            openApiKeyModal();
+          }
+          throw new Error(errData.detail || "Gagal memproses teks.");
+        }
+
+        const data = await res.json();
+        renderResults(data);
+        showToast("Berhasil memberi syakal dan menerjemahkan!", "success");
+
+      } catch (err) {
+        showToast(err.message, "error");
+
+        // Display clear in-place diagnostic card
+        const outputSection = document.getElementById('output-section');
+        outputSection.classList.remove('hidden');
+        document.getElementById('tashkil-result').innerHTML = `
+          <div class="text-left p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-sans">
+            <div class="font-bold flex items-center space-x-1.5 mb-1.5 text-sm text-rose-800">
+              <span>⚠️</span>
+              <span>Kendala Pemrosesan AI:</span>
+            </div>
+            <p class="leading-relaxed mb-3 text-slate-700 font-mono bg-white p-2.5 rounded-lg border border-rose-200">${err.message}</p>
+            <div class="bg-white/90 p-3 rounded-lg border border-rose-200 space-y-1.5 text-slate-700">
+              <div class="font-bold text-slate-800">Cara Mengatasi:</div>
+              <ul class="list-disc list-inside space-y-1 text-slate-600">
+                <li><b>Pastikan API Key sudah dimasukkan:</b> Klik tombol <b class="text-emerald-800">'API Key'</b> di pojok kanan atas, lalu masukkan Gemini API Key Anda.</li>
+                <li><b>Ambil Kunci Baru:</b> Jika kunci lama tidak bekerja atau kuota habis, buat kunci gratis baru dalam 5 detik di <a href="https://aistudio.google.com/apikey" target="_blank" class="underline text-emerald-800 font-bold">Google AI Studio (aistudio.google.com/apikey)</a>.</li>
+                <li><b>Uji Coba Cepat:</b> Anda bisa mengklik tombol contoh seperti <b class="text-emerald-800">'طلب العلم'</b> untuk melihat hasil yang sudah teruji.</li>
+              </ul>
+            </div>
+          </div>
+        `;
+        document.getElementById('trans-text-indo').textContent = "Tidak dapat memuat terjemahan karena kendala AI di atas.";
+        document.getElementById('trans-text-sunda_lemes').textContent = "Henteu tiasa ngamuat tarjamah kumargi kendala AI di luhur.";
+        document.getElementById('trans-text-sunda_logat').textContent = "Henteu tiasa ngamuat tarjamah kumargi kendala AI di luhur.";
+        document.getElementById('tarkib-container').innerHTML = '';
+        outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = "Beri Syakal & Terjemahkan";
+        btnIcon.classList.remove('hidden');
+        btnSpinner.classList.add('hidden');
+      }
+    }
+
+    let currentArabicFontSize = 26;
+    let currentArabicSpacing = 'ideal';
+
+    function setArabicSpacing(mode) {
+      currentArabicSpacing = mode;
+      const el = document.getElementById('tashkil-result');
+      if (!el) return;
+      el.classList.remove('arabic-spacing-compact', 'arabic-spacing-ideal', 'arabic-spacing-relaxed');
+      el.classList.add(`arabic-spacing-${mode}`);
+
+      const btns = ['compact', 'ideal', 'relaxed'];
+      btns.forEach(b => {
+        const btn = document.getElementById(`spc-btn-${b}`);
+        if (!btn) return;
+        if (b === mode) {
+          btn.className = "px-2 py-0.5 rounded font-bold bg-emerald-100 text-emerald-900 transition shadow-2xs";
+        } else {
+          btn.className = "px-2 py-0.5 rounded font-medium text-slate-600 hover:text-emerald-800 transition";
+        }
+      });
+    }
+
+    function adjustArabicFontSize(delta) {
+      currentArabicFontSize = Math.min(48, Math.max(18, currentArabicFontSize + delta));
+      const el = document.getElementById('tashkil-result');
+      if (el) {
+        el.style.fontSize = `${currentArabicFontSize}px`;
+      }
+      const lbl = document.getElementById('arabic-font-size-label');
+      if (lbl) {
+        lbl.innerText = `${currentArabicFontSize}px`;
+      }
+    }
+
+    // Global state for classic slanted translation
+    window.currentKlasikTokens = [];
+    let klasikAngle = 35;
+    let klasikScript = 'latin';
+    let klasikShowSymbols = true;
+
+    function setKlasikAngle(angle) {
+      klasikAngle = angle;
+      [35, 48, 0].forEach(a => {
+        const btn = document.getElementById(`angle-btn-${a}`);
+        if (btn) {
+          if (a === angle) {
+            btn.className = "px-2 py-0.5 rounded font-bold bg-amber-200/80 text-amber-950 transition";
+          } else {
+            btn.className = "px-2 py-0.5 rounded font-medium text-slate-600 hover:text-amber-900 transition";
+          }
+        }
+      });
+      renderKlasikInterlinear(window.currentKlasikTokens);
+    }
+
+    // Kamus & Mesin Transliterasi Pegon Sunda di Sisi Klien
+    const CLIENT_PEGON_DICT = {
+      "ari": "اَرِ", "eta": "ايتَا", "tetep": "تَتَڤْ", "saha": "سَاهَا", "naon": "نَاوُنْ",
+      "kana": "كَانَا", "ka": "كَا", "ku": "كُو", "kalawan": "كَلَاوَانْ", "dina": "دِينَا",
+      "di": "دِي", "tina": "تِينَا", "ti": "تِي", "nepi": "نَڤِي", "mangka": "مَڠْكَا",
+      "geus": "ݢَوْسْ", "keur": "كَوْرْ", "baris": "بَارِسْ", "temen-temen": "تَمَنْ-تَمَنْ",
+      "temen": "تَمَنْ", "terkadang": "تَرْكَادَاڠْ", "ampir-ampiran": "اَمْڤِيرْ-اَمْڤِيرَانْ",
+      "ampir": "اَمْڤِيرْ", "yen": "يَينْ", "teh": "تَيْهْ", "ieu": "اِيئوُ", "itu": "اِيتُو",
+      "anapon": "اَنَاڤَوْنْ", "boh": "بَوْهْ", "boh yen": "بَوْهْ يَيْـنْ",
+      "henteu": "هِنْتَوْ", "aya": "اَيَا", "bukti": "بُوكْتِي", "halna": "حَالْنَا",
+      "karana": "كَرَانَا", "lantaran": "لَنْتَارَانْ", "saestuna": "سَايَسْتُونَـا",
+      "saenya-enyana": "سَاايڽَا-ايڽَانَا", "sakur": "سَاكُورْ", "puji": "ڤُوجِي",
+      "gusti": "ݢُوسْتِي", "allah": "اَللَّهْ", "kabeh": "كَبَيهْ", "sadaya": "سَدَايَا",
+      "kaula": "كَاوْلَا", "kuring": "كُورِڠْ", "anjeun": "اَنْجَوْنْ", "aranjeun": "اَرَانْجَوْنْ",
+      "maraneh": "مَارَانَيهْ", "maranehna": "مَارَانَيهْنَا", "manehna": "مَانَيهْنَا",
+      "jalma": "جَلْمَا", "jalma-jalma": "جَلْمَا-جَلْمَا", "pirang-pirang": "ڤِيرَاڠْ-ڤِيرَاڠْ",
+      "perkara": "ڤَرْكَارَا", "anu": "اَنُو", "nu": "نُو", "nyusun": "ڽُوسُونْ",
+      "kitab": "كِتَابْ", "opat": "اَوْڤَتْ", "bagean": "بَاݢَايَانْ", "saparapat": "سَاڤَارَاڤَتْ",
+      "ibadah": "عِبَادَةْ", "adat": "عَادَةْ", "kabiasaan": "كَا بِيَاسَاءَانْ",
+      "ngabinasakeun": "ڠَابِينَاسَاكَوْنْ", "nyalametkeun": "ڽَالَمَتْكَوْنْ",
+      "kufur": "كُوفُورْ", "kafakiran": "كَافَاكِيرَانْ", "hate": "حَاتَي", "elmu": "عِلْمُو",
+      "amal": "عَمَلْ", "luhureun": "لُوهُورَوْنْ", "handapeun": "هَنْدَاڤَوْنْ",
+      "bagja": "بَاݢْجَا", "ariman": "اَرِيمَانْ", "iman": "اِيمَانْ", "islam": "اِسْلَامْ",
+      "anging": "اَڠِيڠْ", "pastina": "ڤَسْتِينَا", "sakabeh": "سَكَابَيهْ", "niat": "نِيَّتْ",
+      "pikeun": "ڤِيكَوْنْ", "unggal-unggal": "اوڠْݢَلْ-اوڠْݢَلْ", "hukumna": "حُكُومْنَا",
+      "kageloan": "كَاݢَيلُوئَانْ", "make": "مَكَي", "dibarengan": "دِيبَارَيڠَانْ",
+      "ayana": "اَيَانَا", "ngangkat": "ڠَاڠْكَتْ", "ngadawuh": "ڠَادَاوُوهْ", "ngucap": "ڠُوچَڤْ",
+      "nyaho": "ڽَاهُو", "ningali": "نِيڠَالِي", "nangtung": "نَاڠْتُوڠْ"
+    };
+
+    const CLIENT_PEGON_CONS = {
+      "ng": "ڠ", "ny": "ڽ", "ch": "چ", "kh": "خ", "gh": "غ", "sy": "ش",
+      "sh": "ص", "dh": "ض", "th": "ط", "zh": "ظ", "b": "ب", "c": "چ",
+      "d": "د", "f": "ف", "g": "ݢ", "h": "ه", "j": "ج", "k": "ك",
+      "l": "ل", "m": "م", "n": "ن", "p": "ڤ", "q": "ق", "r": "ر",
+      "s": "س", "t": "ت", "v": "ڤ", "w": "و", "y": "ي", "z": "ز"
+    };
+
+    function isArabicScript(text) {
+      if (!text) return false;
+      return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(text);
+    }
+
+    function transliteratePhoneticPegon(w) {
+      if (!w) return "";
+      let res = [];
+      let i = 0;
+      let n = w.length;
+      let isStart = true;
+      while (i < n) {
+        if (i + 1 < n && w.slice(i, i+2) === "eu") {
+          res.push(isStart ? "اَوْ" : "َوْ");
+          i += 2; isStart = false; continue;
+        } else if (i + 1 < n && w.slice(i, i+2) === "ai") {
+          res.push(isStart ? "اَايْ" : "َايْ");
+          i += 2; isStart = false; continue;
+        } else if (i + 1 < n && w.slice(i, i+2) === "au") {
+          res.push(isStart ? "اَاوْ" : "َاوْ");
+          i += 2; isStart = false; continue;
+        }
+
+        const twoC = w.slice(i, i+2);
+        if (i + 1 < n && CLIENT_PEGON_CONS[twoC]) {
+          const c = CLIENT_PEGON_CONS[twoC];
+          i += 2; isStart = false;
+          if (i < n) {
+            if (i + 1 < n && w.slice(i, i+2) === "eu") { res.push(c + "َوْ"); i += 2; }
+            else if (w[i] === 'a') { res.push(c + "َا"); i += 1; }
+            else if (w[i] === 'i') { res.push(c + "ِي"); i += 1; }
+            else if (w[i] === 'u') { res.push(c + "ُو"); i += 1; }
+            else if (w[i] === 'e' || w[i] === 'é') { res.push(c + "َيْ"); i += 1; }
+            else if (w[i] === 'o') { res.push(c + "َاو"); i += 1; }
+            else { res.push(c + "ْ"); }
+          } else {
+            res.push(c + "ْ");
+          }
+          continue;
+        }
+
+        const oneC = w[i];
+        if (CLIENT_PEGON_CONS[oneC]) {
+          const c = CLIENT_PEGON_CONS[oneC];
+          i += 1; isStart = false;
+          if (i < n) {
+            if (i + 1 < n && w.slice(i, i+2) === "eu") { res.push(c + "َوْ"); i += 2; }
+            else if (w[i] === 'a') { res.push(c + "َا"); i += 1; }
+            else if (w[i] === 'i') { res.push(c + "ِي"); i += 1; }
+            else if (w[i] === 'u') { res.push(c + "ُو"); i += 1; }
+            else if (w[i] === 'e' || w[i] === 'é') { res.push(c + "َيْ"); i += 1; }
+            else if (w[i] === 'o') { res.push(c + "َاو"); i += 1; }
+            else { res.push(c + "ْ"); }
+          } else {
+            res.push(c + "ْ");
+          }
+          continue;
+        }
+
+        if (w[i] === 'a') res.push(isStart ? "اَ" : "َا");
+        else if (w[i] === 'i') res.push(isStart ? "اِي" : "ِي");
+        else if (w[i] === 'u') res.push(isStart ? "اُو" : "ُو");
+        else if (w[i] === 'e' || w[i] === 'é') res.push(isStart ? "اَيْ" : "َيْ");
+        else if (w[i] === 'o') res.push(isStart ? "اَوْ" : "َاو");
+        else res.push(w[i]);
+        i += 1; isStart = false;
+      }
+      return res.join('');
+    }
+
+    function sundaToPegonClient(text) {
+      if (!text) return "";
+      if (isArabicScript(text)) return text;
+      const tokens = text.match(/[\w\-]+|[^\w\s]|\s+/g) || [];
+      return tokens.map(tok => {
+        if (/^\s+$/.test(tok)) return tok;
+        if (/^[^\w\s]+$/.test(tok)) {
+          if (tok === ',') return '،';
+          if (tok === '?') return '؟';
+          if (tok === ';') return '؛';
+          return tok;
+        }
+        const low = tok.toLowerCase();
+        if (CLIENT_PEGON_DICT[low]) return CLIENT_PEGON_DICT[low];
+        if (low.includes('-')) {
+          return low.split('-').map(part => CLIENT_PEGON_DICT[part] || transliteratePhoneticPegon(part)).join('-');
+        }
+        if (low.endsWith("na") && low.length > 3 && CLIENT_PEGON_DICT[low.slice(0, -2)]) {
+          return CLIENT_PEGON_DICT[low.slice(0, -2)] + "نَا";
+        }
+        if (low.endsWith("keun") && low.length > 5 && CLIENT_PEGON_DICT[low.slice(0, -4)]) {
+          return CLIENT_PEGON_DICT[low.slice(0, -4)] + "كَوْنْ";
+        }
+        return transliteratePhoneticPegon(low);
+      }).join('');
+    }
+
+    let currentLogatScript = 'latin';
+
+    function setLogatScript(script) {
+      currentLogatScript = script;
+      ['latin', 'pegon', 'dual'].forEach(s => {
+        const btn = document.getElementById(`logat-script-btn-${s}`);
+        const view = document.getElementById(`logat-view-${s}`);
+        if (btn) {
+          if (s === script) {
+            btn.className = "px-2.5 py-1 rounded font-bold bg-amber-200/90 text-amber-950 transition flex items-center space-x-1";
+          } else {
+            btn.className = "px-2.5 py-1 rounded font-medium text-slate-600 hover:text-amber-950 transition flex items-center space-x-1";
+          }
+        }
+        if (view) {
+          if (s === script) {
+            view.classList.remove('hidden');
+          } else {
+            view.classList.add('hidden');
+          }
+        }
+      });
+    }
+
+    let klasikLineMode = 'multi'; // 'multi' (beberapa baris rapi) atanapi 'single' (1 baris manjang)
+
+    function setKlasikLineMode(mode) {
+      klasikLineMode = mode;
+      ['multi', 'single'].forEach(m => {
+        const btn = document.getElementById(`line-mode-btn-${m}`);
+        if (btn) {
+          if (m === mode) {
+            btn.className = "px-2 py-0.5 rounded font-bold bg-amber-200/80 text-amber-950 transition flex items-center space-x-1";
+          } else {
+            btn.className = "px-2 py-0.5 rounded font-medium text-slate-600 hover:text-amber-900 transition";
+          }
+        }
+      });
+      renderKlasikInterlinear(window.currentKlasikTokens);
+    }
+
+    function splitKlasikLines(text) {
+      if (!text) return [""];
+      if (klasikLineMode === 'single') return [text.trim()];
+
+      const trimmed = text.trim();
+      const words = trimmed.split(/\s+/).filter(w => w.length > 0);
+      const n = words.length;
+
+      // 1 atawa 2 kecap pondok (<= 16 karakter) cicing dina 1 baris
+      if (n <= 2 && trimmed.length <= 16) {
+        return [trimmed];
+      }
+
+      // Upami 3 dugi 4 kecap: beulah jadi 2 baris saimbang
+      if (n <= 4) {
+        const mid = Math.ceil(n / 2);
+        return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+      }
+
+      // Upami 5 dugi 6 kecap: beulah jadi 2 baris (atawa 3 upami panjang pisan)
+      if (n <= 6) {
+        const mid = Math.ceil(n / 2);
+        const l1 = words.slice(0, mid).join(' ');
+        const l2 = words.slice(mid).join(' ');
+        if (l1.length > 22 || l2.length > 22) {
+          const p1 = Math.ceil(n / 3);
+          const p2 = Math.ceil((2 * n) / 3);
+          return [words.slice(0, p1).join(' '), words.slice(p1, p2).join(' '), words.slice(p2).join(' ')];
+        }
+        return [l1, l2];
+      }
+
+      // 7 kecap ka luhur: 3 dugi 4 baris
+      const targetLines = n <= 9 ? 3 : 4;
+      const chunkSize = Math.ceil(n / targetLines);
+      const lines = [];
+      for (let i = 0; i < n; i += chunkSize) {
+        lines.push(words.slice(i, i + chunkSize).join(' '));
+      }
+      return lines;
+    }
+
+    function setKlasikScript(script) {
+      klasikScript = script;
+      ['latin', 'pegon'].forEach(s => {
+        const btn = document.getElementById(`script-btn-${s}`);
+        if (btn) {
+          if (s === script) {
+            btn.className = "px-2 py-0.5 rounded font-bold bg-amber-200/80 text-amber-950 transition";
+          } else {
+            btn.className = "px-2 py-0.5 rounded font-medium text-slate-600 hover:text-amber-900 transition";
+          }
+        }
+      });
+      renderKlasikInterlinear(window.currentKlasikTokens);
+    }
+
+    function toggleKlasikSymbols() {
+      const cb = document.getElementById('toggle-klasik-symbol');
+      klasikShowSymbols = cb ? cb.checked : true;
+      renderKlasikInterlinear(window.currentKlasikTokens);
+    }
+
+    function renderKlasikInterlinear(tokens) {
+      const flow = document.getElementById('klasik-interlinear-flow');
+      if (!flow) return;
+      flow.innerHTML = '';
+
+      if (!tokens || !tokens.length) {
+        flow.innerHTML = `<p class="text-xs text-slate-400 italic py-6 text-center w-full">Data interlinear ngalogat Sunda klasik teu acan aya.</p>`;
+        return;
+      }
+
+      tokens.forEach((item) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = "inline-flex flex-col items-center relative group min-w-[3.5rem] cursor-pointer select-text";
+        wrapper.title = `${item.role || 'Nahwu'}: [${item.symbol || ''}] ${item.sunda || ''}`;
+
+        // Arabic word
+        const arDiv = document.createElement('div');
+        arDiv.className = "arabic-text font-bold text-emerald-950 select-text leading-tight group-hover:text-amber-800 transition text-center";
+        arDiv.style.fontSize = `${klasikFontSize}px`;
+        arDiv.textContent = item.word || '';
+
+        // Teks terjemah Sunda (Latin atanapi Pegon)
+        const rawText = (klasikScript === 'pegon') 
+          ? ((item.pegon && isArabicScript(item.pegon)) ? item.pegon : sundaToPegonClient(item.sunda || ''))
+          : (item.sunda || '');
+
+        const lines = splitKlasikLines(rawText);
+        const maxLineLen = Math.max(...lines.map(l => l.length), 1);
+
+        // Slanted gloss container
+        const glossDiv = document.createElement('div');
+        glossDiv.className = "transition-transform duration-200 select-text origin-top-right flex flex-col space-y-0.5 " + 
+          (klasikScript === 'pegon' ? "items-start text-right" : "items-end text-right");
+        
+        if (klasikAngle > 0) {
+          glossDiv.style.transform = `rotate(-${klasikAngle}deg)`;
+          glossDiv.style.marginTop = "8px";
+          const angleRad = (klasikAngle * Math.PI) / 180;
+          const slantDrop = Math.min(85, Math.max(26, maxLineLen * 5.8 * Math.sin(angleRad)));
+          const stackDrop = (lines.length - 1) * 16;
+          glossDiv.style.marginBottom = `${Math.round(slantDrop + stackDrop)}px`;
+        } else {
+          glossDiv.style.transform = "none";
+          glossDiv.style.marginTop = "4px";
+          glossDiv.style.marginBottom = `${4 + (lines.length - 1) * 6}px`;
+        }
+
+        // Generate lines
+        lines.forEach((lineText, lineIdx) => {
+          const lineDiv = document.createElement('div');
+          lineDiv.className = "flex items-center whitespace-nowrap " + (klasikScript === 'pegon' ? "justify-start" : "justify-end");
+
+          if (klasikScript === 'pegon') {
+            lineDiv.setAttribute('dir', 'rtl');
+            if (lineIdx === 0 && klasikShowSymbols && item.symbol && item.symbol !== '-') {
+              const symSpan = document.createElement('span');
+              symSpan.className = "font-arabic font-bold text-[12px] px-1 py-0.2 rounded bg-red-100/90 text-red-950 border border-red-300 ml-1.5 shadow-2xs inline-block";
+              symSpan.textContent = item.symbol;
+              lineDiv.appendChild(symSpan);
+            }
+            const textSpan = document.createElement('span');
+            textSpan.className = "font-arabic text-sm sm:text-base text-amber-950 font-bold tracking-wide";
+            textSpan.textContent = lineText;
+            lineDiv.appendChild(textSpan);
+          } else {
+            lineDiv.setAttribute('dir', 'ltr');
+            if (lineIdx === 0 && klasikShowSymbols && item.symbol && item.symbol !== '-') {
+              const symSpan = document.createElement('span');
+              symSpan.className = "font-arabic font-bold text-[13px] px-1 py-0.2 rounded bg-red-100/90 text-red-950 border border-red-300 mr-1.5 shadow-2xs inline-block";
+              symSpan.textContent = item.symbol;
+              lineDiv.appendChild(symSpan);
+            }
+            const textSpan = document.createElement('span');
+            textSpan.className = "text-[12px] sm:text-[13px] text-amber-950 font-semibold italic font-serif tracking-tight";
+            textSpan.textContent = lineText;
+            lineDiv.appendChild(textSpan);
+          }
+          glossDiv.appendChild(lineDiv);
+        });
+
+        wrapper.appendChild(arDiv);
+        wrapper.appendChild(glossDiv);
+        flow.appendChild(wrapper);
+      });
+    }
+
+    let klasikFontSize = 26;
+
+    function adjustKlasikFontSize(delta) {
+      klasikFontSize = Math.min(44, Math.max(18, klasikFontSize + delta));
+      const lbl = document.getElementById('klasik-font-size-label');
+      if (lbl) lbl.textContent = `${klasikFontSize}px`;
+      renderKlasikInterlinear(window.currentKlasikTokens);
+    }
+
+    let currentTarkibViewMode = 'table';
+    window.currentTarkibNotes = [];
+
+    function setTarkibViewMode(mode) {
+      currentTarkibViewMode = mode;
+      const tableWrap = document.getElementById('tarkib-table-wrap');
+      const gridWrap = document.getElementById('tarkib-container');
+      const tableBtn = document.getElementById('tarkib-view-table-btn');
+      const gridBtn = document.getElementById('tarkib-view-grid-btn');
+
+      if (mode === 'table') {
+        if (tableWrap) tableWrap.classList.remove('hidden');
+        if (gridWrap) gridWrap.classList.add('hidden');
+        if (tableBtn) tableBtn.className = "px-2.5 py-1 rounded-md font-bold bg-white text-emerald-950 shadow-2xs transition flex items-center space-x-1";
+        if (gridBtn) gridBtn.className = "px-2.5 py-1 rounded-md font-medium text-slate-600 hover:text-slate-900 transition flex items-center space-x-1";
+      } else {
+        if (tableWrap) tableWrap.classList.add('hidden');
+        if (gridWrap) gridWrap.classList.remove('hidden');
+        if (tableBtn) tableBtn.className = "px-2.5 py-1 rounded-md font-medium text-slate-600 hover:text-slate-900 transition flex items-center space-x-1";
+        if (gridBtn) gridBtn.className = "px-2.5 py-1 rounded-md font-bold bg-white text-emerald-950 shadow-2xs transition flex items-center space-x-1";
+      }
+    }
+
+    function filterTarkibNotes() {
+      const q = (document.getElementById('tarkib-search-input')?.value || '').trim().toLowerCase();
+      if (!window.currentTarkibNotes) return;
+
+      const filtered = window.currentTarkibNotes.filter(item => {
+        if (!q) return true;
+        const w = (item.word || '').toLowerCase();
+        const p = (item.position || '').toLowerCase();
+        const s = (item.shorof || '').toLowerCase();
+        const i = (item.i_rab || '').toLowerCase();
+        const n = (item.note || '').toLowerCase();
+        const su = (item.sunda || '').toLowerCase();
+        return w.includes(q) || p.includes(q) || s.includes(q) || i.includes(q) || n.includes(q) || su.includes(q);
+      });
+
+      renderTarkibDOM(filtered);
+    }
+
+    function renderTarkibNotes(notes) {
+      window.currentTarkibNotes = notes || [];
+      const countBadge = document.getElementById('tarkib-count-badge');
+      if (countBadge) {
+        countBadge.textContent = `${window.currentTarkibNotes.length} Kata Dianalisis Lengkap`;
+      }
+      renderTarkibDOM(window.currentTarkibNotes);
+    }
+
+    function renderTarkibDOM(items) {
+      const tbody = document.getElementById('tarkib-table-body');
+      const grid = document.getElementById('tarkib-container');
+      if (tbody) tbody.innerHTML = '';
+      if (grid) grid.innerHTML = '';
+
+      if (!items || !items.length) {
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 italic">Tidak ada catatan analisis nahwu-shorof.</td></tr>`;
+        }
+        if (grid) {
+          grid.innerHTML = `<div class="col-span-full py-6 text-center text-slate-400 italic">Tidak ada catatan analisis nahwu-shorof.</div>`;
+        }
+        return;
+      }
+
+      items.forEach((item, idx) => {
+        let word = item.word || '';
+        let pos = item.position || 'Nahwu';
+        let shorof = item.shorof || 'Kalimah Isim / Fi\'il / Haraf';
+        let irab = item.i_rab || "Mu'rab";
+        let symbol = item.symbol || '-';
+        let sunda = item.sunda || '';
+        let note = item.note || '';
+
+        if (typeof item === 'string') {
+          note = item;
+          word = item.split(' ')[0] || '';
+        }
+
+        // 1. Table Row
+        if (tbody) {
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-amber-50/50 transition border-b border-slate-100 last:border-0";
+          tr.innerHTML = `
+            <td class="py-3 px-3 text-center text-slate-400 font-mono text-[11px]">${idx + 1}</td>
+            <td class="py-3 px-4 text-right font-arabic font-bold text-lg text-emerald-950 leading-loose select-text" dir="rtl">${word}</td>
+            <td class="py-3 px-3">
+              <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                ${pos}
+              </span>
+            </td>
+            <td class="py-3 px-3 text-slate-700 font-medium">
+              <span class="font-arabic text-sm text-slate-800" dir="rtl">${shorof}</span>
+            </td>
+            <td class="py-3 px-3 text-slate-600 text-xs font-medium">
+              ${irab}
+            </td>
+            <td class="py-3 px-2.5 text-center">
+              ${symbol && symbol !== '-' ? `<span class="font-arabic font-bold text-xs px-2 py-0.5 rounded bg-red-100/90 text-red-950 border border-red-300 shadow-2xs">${symbol}</span>` : '<span class="text-slate-300">-</span>'}
+            </td>
+            <td class="py-3 px-4 select-text">
+              ${sunda ? `<div class="font-semibold text-amber-950 text-xs mb-0.5"><b>Logat:</b> ${sunda}</div>` : ''}
+              <div class="text-[11px] text-slate-500 leading-relaxed">${note}</div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+
+        // 2. Grid Card
+        if (grid) {
+          const card = document.createElement('div');
+          card.className = "p-4 rounded-xl border border-slate-200 bg-white hover:border-emerald-400 transition shadow-xs flex flex-col justify-between space-y-2.5";
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                <div class="flex items-center space-x-2">
+                  <span class="text-[11px] font-mono font-bold text-slate-400">#${idx + 1}</span>
+                  ${symbol && symbol !== '-' ? `<span class="font-arabic font-bold text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-950 border border-red-300">${symbol}</span>` : ''}
+                </div>
+                <span class="text-[11px] font-bold px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">${pos}</span>
+              </div>
+              <div class="text-right py-1">
+                <span class="arabic-text text-xl font-bold text-emerald-950 leading-loose select-text" dir="rtl">${word}</span>
+              </div>
+              <div class="space-y-1.5 pt-1 text-xs">
+                <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Shorof & Wazan:</span>
+                  <span class="font-arabic text-sm text-slate-800 font-semibold" dir="rtl">${shorof}</span>
+                </div>
+                <div class="text-slate-700">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">I'rab:</span>
+                  <span class="font-medium text-xs text-slate-800">${irab}</span>
+                </div>
+              </div>
+            </div>
+            <div class="border-t border-slate-100 pt-2 text-[11px]">
+              ${sunda ? `<div class="font-semibold text-amber-900 mb-1"><b>Logat:</b> ${sunda}</div>` : ''}
+              <div class="text-slate-500 leading-relaxed">${note}</div>
+            </div>
+          `;
+          grid.appendChild(card);
+        }
+      });
+    }
+
+    function renderResults(data) {
+      document.getElementById('output-section').classList.remove('hidden');
+
+      // 1. Tashkil
+      const elTashkil = document.getElementById('tashkil-result');
+      elTashkil.textContent = data.tashkil || '';
+      elTashkil.style.fontSize = `${currentArabicFontSize}px`;
+      elTashkil.classList.remove('arabic-spacing-compact', 'arabic-spacing-ideal', 'arabic-spacing-relaxed');
+      elTashkil.classList.add(`arabic-spacing-${currentArabicSpacing}`);
+
+      // 2. Translations
+      document.getElementById('trans-text-indo').textContent = data.translation_id || '';
+      document.getElementById('trans-text-sunda_lemes').textContent = data.translation_sunda_lemes || '';
+
+      const logatLatin = data.translation_sunda_logat || '';
+      const logatPegon = data.translation_sunda_logat_pegon || sundaToPegonClient(logatLatin);
+
+      document.getElementById('trans-text-sunda_logat').textContent = logatLatin;
+      const elPegon = document.getElementById('trans-text-sunda_logat_pegon');
+      if (elPegon) elPegon.textContent = logatPegon;
+      const elPegonDual = document.getElementById('trans-text-sunda_logat_pegon_dual');
+      if (elPegonDual) elPegonDual.textContent = logatPegon;
+      const elLogatDual = document.getElementById('trans-text-sunda_logat_dual');
+      if (elLogatDual) elLogatDual.textContent = logatLatin;
+
+      // 2b. Sunda Klasik Makna Miring
+      window.currentKlasikTokens = data.translation_sunda_klasik || [];
+      renderKlasikInterlinear(window.currentKlasikTokens);
+
+      // 3. Analisis Kedudukan Nahwu & Shorof Lengkap
+      renderTarkibNotes(data.tarkib_notes);
+
+      if (data.cached) {
+        showToast("⚡ Hasil diambil seketika dari cache database lokal (0 detik / 0 token kuota)!", "info");
+      }
+
+      document.getElementById('output-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Translation Tab Switching
+    function switchTransTab(tab) {
+      currentActiveTransTab = tab;
+      const tabs = ['indo', 'sunda_lemes', 'sunda_logat', 'sunda_klasik'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const pane = document.getElementById(`trans-pane-${t}`);
+        if (!btn || !pane) return;
+        if (t === tab) {
+          btn.className = "pb-2.5 px-3 text-xs sm:text-sm font-bold border-b-2 border-emerald-700 text-emerald-900 transition flex items-center space-x-1.5";
+          pane.classList.remove('hidden');
+        } else {
+          btn.className = "pb-2.5 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition flex items-center space-x-1.5";
+          pane.classList.add('hidden');
+        }
+      });
+    }
+
+    function copyActiveTranslation(btn) {
+      let text = '';
+      if (currentActiveTransTab === 'indo') {
+        text = document.getElementById('trans-text-indo').textContent;
+      } else if (currentActiveTransTab === 'sunda_lemes') {
+        text = document.getElementById('trans-text-sunda_lemes').textContent;
+      } else if (currentActiveTransTab === 'sunda_logat') {
+        if (currentLogatScript === 'pegon') {
+          const el = document.getElementById('trans-text-sunda_logat_pegon');
+          text = el ? el.textContent : '';
+        } else if (currentLogatScript === 'dual') {
+          const p = document.getElementById('trans-text-sunda_logat_pegon_dual');
+          const l = document.getElementById('trans-text-sunda_logat_dual');
+          text = (p ? p.textContent : '') + "\n\n" + (l ? l.textContent : '');
+        } else {
+          text = document.getElementById('trans-text-sunda_logat').textContent;
+        }
+      } else {
+        if (window.currentKlasikTokens && window.currentKlasikTokens.length) {
+          if (klasikScript === 'pegon') {
+            text = window.currentKlasikTokens.map(t => `${t.word} [${t.symbol || '-'}] ${t.pegon || sundaToPegonClient(t.sunda || '')}`).join(' ');
+          } else {
+            text = window.currentKlasikTokens.map(t => `${t.word} [${t.symbol || '-'}] ${t.sunda || ''}`).join(' ');
+          }
+        }
+      }
+      copyToClipboard(null, btn, text);
+    }
+
+    function copyToClipboard(elemId, btn, directText) {
+      const text = directText || document.getElementById(elemId).textContent;
+      if (!text) return;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `<span class="text-emerald-700 font-bold">✓ Tersalin!</span>`;
+        setTimeout(() => {
+          btn.innerHTML = originalHtml;
+        }, 2000);
+      });
+    }
+
+    // API Key Handling
+    let serverHasApiKey = false;
+
+    async function checkServerStatus() {
+      try {
+        const res = await fetch('/api/status');
+        if (res.ok) {
+          const data = await res.json();
+          serverHasApiKey = !!data.env_api_key_configured;
+          if (data.total_glossary !== undefined) {
+            const navBadge = document.getElementById('nav-glossary-count');
+            if (navBadge) navBadge.textContent = data.total_glossary;
+          }
+        }
+      } catch (e) {}
+      initApiKey();
+    }
+
+    // ========================================================
+    // KAMUS LOGAT PESANTREN SUNDA (GLOSSARY CRUD)
+    // ========================================================
+    let glossarySearchTimer = null;
+
+    function openGlossaryModal() {
+      document.getElementById('glossary-modal').classList.remove('hidden');
+      loadGlossary();
+    }
+
+    function closeGlossaryModal() {
+      document.getElementById('glossary-modal').classList.add('hidden');
+    }
+
+    function toggleAddGlossaryForm() {
+      const panel = document.getElementById('add-glossary-form-panel');
+      panel.classList.toggle('hidden');
+      if (!panel.classList.contains('hidden')) {
+        document.getElementById('input-gloss-arabic').focus();
+      }
+    }
+
+    function debounceGlossarySearch() {
+      clearTimeout(glossarySearchTimer);
+      glossarySearchTimer = setTimeout(() => {
+        loadGlossary();
+      }, 300);
+    }
+
+    async function loadGlossary() {
+      const container = document.getElementById('glossary-items-container');
+      const q = document.getElementById('glossary-search-input').value.trim();
+      const cat = document.getElementById('glossary-category-filter').value;
+      
+      container.innerHTML = `<p class="text-xs text-emerald-800 text-center py-10 animate-pulse font-medium">Memuat kosa kata kamus pesantren...</p>`;
+
+      try {
+        let url = `/api/glossary?limit=250`;
+        if (q) url += `&q=${encodeURIComponent(q)}`;
+        if (cat) url += `&category=${encodeURIComponent(cat)}`;
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Gagal mengambil data kamus.");
+        const items = await res.json();
+
+        // Update count badges
+        const countText = `${items.length} Kosa Kata`;
+        document.getElementById('modal-glossary-badge').textContent = countText;
+        if (!q && !cat) {
+          const navBadge = document.getElementById('nav-glossary-count');
+          if (navBadge) navBadge.textContent = items.length;
+        }
+
+        if (items.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-12 text-slate-400 space-y-2">
+              <p class="text-2xl">📖</p>
+              <p class="text-xs font-semibold">Belum ada kosa kata yang cocok dengan pencarian.</p>
+              <button onclick="toggleAddGlossaryForm()" class="text-xs text-emerald-700 underline font-bold">Tambah kosa kata baru sekarang</button>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = '';
+        items.forEach(item => {
+          const card = document.createElement('div');
+          card.className = "p-3 bg-white hover:bg-emerald-50/40 rounded-xl border border-slate-200/80 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs";
+          
+          const isNahwu = item.category && item.category.startsWith('nahwu');
+          const roleBadgeColor = isNahwu ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-emerald-100 text-emerald-900 border-emerald-300';
+          const roleName = item.grammar_role || 'umum';
+          const markerSpan = item.pesantren_marker ? `<span class="px-1.5 py-0.5 rounded bg-emerald-700 text-white font-mono text-[10px] font-bold">Logat: "${item.pesantren_marker}"</span>` : '';
+
+          card.innerHTML = `
+            <div class="space-y-1 flex-1">
+              <div class="flex items-center space-x-2">
+                <span dir="rtl" class="arabic-text text-xl font-bold text-emerald-950">${item.arabic_word}</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${roleBadgeColor}">${roleName.toUpperCase()}</span>
+                ${markerSpan}
+              </div>
+              <div class="text-xs text-slate-800">
+                <span class="font-bold text-emerald-900">Logat Sunda:</span>
+                <span class="italic text-slate-700 font-medium">${item.sunda_meaning}</span>
+                ${item.indo_meaning ? `<span class="text-slate-400 text-[11px] ml-1">(${item.indo_meaning})</span>` : ''}
+              </div>
+              ${item.notes ? `<div class="text-[10px] text-slate-400 italic">${item.notes}</div>` : ''}
+            </div>
+
+            <div class="flex items-center space-x-1.5 self-end sm:self-center">
+              <button onclick="deleteGlossaryItem(${item.id}, '${item.arabic_word.replace(/'/g, "\\'")}')" title="Hapus dari Kamus" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+      } catch (err) {
+        container.innerHTML = `<p class="text-xs text-rose-500 text-center py-8">Gagal memuat kamus: ${err.message}</p>`;
+      }
+    }
+
+    async function saveGlossaryItem() {
+      const arabic = document.getElementById('input-gloss-arabic').value.trim();
+      const role = document.getElementById('input-gloss-role').value;
+      const marker = document.getElementById('input-gloss-marker').value.trim();
+      const sunda = document.getElementById('input-gloss-sunda').value.trim();
+      const indo = document.getElementById('input-gloss-indo').value.trim();
+      const cat = document.getElementById('input-gloss-cat').value;
+      const notes = document.getElementById('input-gloss-notes').value.trim();
+
+      if (!arabic || !sunda) {
+        showToast("Lafadz Arab dan Arti Sunda Pesantren wajib diisi!", "warning");
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/glossary', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            arabic_word: arabic,
+            grammar_role: role,
+            pesantren_marker: marker,
+            sunda_meaning: sunda,
+            indo_meaning: indo,
+            category: cat,
+            notes: notes
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "Gagal menyimpan");
+        }
+
+        showToast(`Kosa kata "${arabic}" berhasil disimpan ke kamus!`, "success");
+        // Clear form
+        document.getElementById('input-gloss-arabic').value = '';
+        document.getElementById('input-gloss-marker').value = '';
+        document.getElementById('input-gloss-sunda').value = '';
+        document.getElementById('input-gloss-indo').value = '';
+        document.getElementById('input-gloss-notes').value = '';
+        toggleAddGlossaryForm();
+        loadGlossary();
+
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    async function deleteGlossaryItem(id, word) {
+      if (!confirm(`Hapus kosa kata "${word}" dari kamus pesantren?`)) return;
+
+      try {
+        const res = await fetch(`/api/glossary/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          showToast(`Kosa kata "${word}" berhasil dihapus.`, "info");
+          loadGlossary();
+        } else {
+          showToast("Gagal menghapus kosa kata.", "error");
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    }
+
+    function initApiKey() {
+      const savedKey = localStorage.getItem('gemini_api_key');
+      const badge = document.getElementById('api-key-badge-text');
+      if (savedKey) {
+        document.getElementById('input-api-key').value = savedKey;
+        badge.textContent = 'API Key Aktif ✓';
+        badge.className = 'font-semibold text-amber-300';
+      } else if (serverHasApiKey) {
+        badge.textContent = 'API Key Server ✓';
+        badge.className = 'font-semibold text-emerald-300';
+      } else {
+        badge.textContent = 'Set API Key';
+        badge.className = 'font-semibold text-slate-300';
+      }
+    }
+
+    function openApiKeyModal() {
+      document.getElementById('api-key-modal').classList.remove('hidden');
+      document.getElementById('input-api-key').focus();
+    }
+
+    function closeApiKeyModal() {
+      document.getElementById('api-key-modal').classList.add('hidden');
+      document.getElementById('api-key-test-status').classList.add('hidden');
+    }
+
+    async function testApiKey() {
+      const key = document.getElementById('input-api-key').value.trim() || localStorage.getItem('gemini_api_key');
+      const statusDiv = document.getElementById('api-key-test-status');
+      const testBtn = document.getElementById('btn-test-key');
+      
+      if (!key) {
+        statusDiv.className = "text-xs p-2.5 rounded-lg border bg-rose-50 border-rose-200 text-rose-800";
+        statusDiv.innerHTML = "⚠️ Masukkan API Key terlebih dahulu sebelum mengetes.";
+        statusDiv.classList.remove('hidden');
+        return;
+      }
+
+      testBtn.disabled = true;
+      testBtn.innerHTML = "<span>⏳</span><span>Menguji...</span>";
+      statusDiv.className = "text-xs p-2.5 rounded-lg border bg-amber-50 border-amber-200 text-amber-900";
+      statusDiv.innerHTML = "Menghubungi Google Gemini API...";
+      statusDiv.classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/verify-key', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ api_key: key })
+        });
+        const data = await res.json();
+        if (data.valid) {
+          statusDiv.className = "text-xs p-2.5 rounded-lg border bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold";
+          statusDiv.innerHTML = `✓ ${data.message}`;
+        } else {
+          statusDiv.className = "text-xs p-2.5 rounded-lg border bg-rose-50 border-rose-300 text-rose-900";
+          statusDiv.innerHTML = `❌ ${data.message}`;
+        }
+      } catch (err) {
+        statusDiv.className = "text-xs p-2.5 rounded-lg border bg-rose-50 border-rose-300 text-rose-900";
+        statusDiv.innerHTML = `❌ Gagal menghubungi server: ${err.message}`;
+      } finally {
+        testBtn.disabled = false;
+        testBtn.innerHTML = "<span>🔍</span><span>Tes Koneksi</span>";
+      }
+    }
+
+    async function saveApiKey() {
+      const key = document.getElementById('input-api-key').value.trim();
+      if (key) {
+        localStorage.setItem('gemini_api_key', key);
+        try {
+          await fetch('/api/save-key', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ api_key: key })
+          });
+        } catch (e) {}
+        serverHasApiKey = true;
+        showToast('API Key berhasil disimpan!', 'success');
+      } else {
+        localStorage.removeItem('gemini_api_key');
+        try {
+          await fetch('/api/save-key', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ api_key: '' })
+          });
+        } catch (e) {}
+        serverHasApiKey = false;
+        showToast('API Key dikosongkan.', 'info');
+      }
+      initApiKey();
+      closeApiKeyModal();
+    }
+
+    // Toast Helper
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+
+      if (type === 'success') {
+        toast.className = "fixed bottom-5 right-5 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold flex items-center space-x-2 bg-emerald-900 text-emerald-100 border-emerald-700";
+      } else if (type === 'error') {
+        toast.className = "fixed bottom-5 right-5 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold flex items-center space-x-2 bg-rose-900 text-rose-100 border-rose-700";
+      } else if (type === 'warning') {
+        toast.className = "fixed bottom-5 right-5 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold flex items-center space-x-2 bg-amber-900 text-amber-100 border-amber-700";
+      } else {
+        toast.className = "fixed bottom-5 right-5 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold flex items-center space-x-2 bg-slate-900 text-slate-100 border-slate-700";
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3500);
+    }
+  
+    // ========================================================
+    // MAKTABAH ALFIYYAH IBNU MALIK & MULTI-SYARAH CONTROLLER
+    // ========================================================
+    let currentAlfiyyahVersion = 'ibnu_aqil'; // 'ibnu_aqil', 'audhah', 'matan', 'sunda_logat'
+    let cachedAlfiyyahChapters = [];
+    let cachedAlfiyyahBayts = [];
+
+    function openAlfiyyahModal() {
+      document.getElementById('alfiyyah-modal').classList.remove('hidden');
+      if (cachedAlfiyyahChapters.length === 0) {
+        loadAlfiyyahData();
+      }
+    }
+
+    function closeAlfiyyahModal() {
+      document.getElementById('alfiyyah-modal').classList.add('hidden');
+    }
+
+    function switchAlfiyyahVersion(version) {
+      currentAlfiyyahVersion = version;
+      const tabs = ['ibnu_aqil', 'audhah', 'matan', 'sunda_logat'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-ver-${t}`);
+        if (!btn) return;
+        if (t === version) {
+          btn.className = "flex-1 py-1.5 px-3 rounded-lg font-semibold transition flex items-center justify-center space-x-1.5 bg-white text-emerald-800 shadow-xs border border-emerald-200";
+        } else {
+          btn.className = "flex-1 py-1.5 px-3 rounded-lg font-semibold text-slate-600 hover:text-slate-900 transition flex items-center justify-center space-x-1.5";
+        }
+      });
+      renderAlfiyyahCards();
+    }
+
+    async function loadAlfiyyahData() {
+      const container = document.getElementById('alfiyyah-list-container');
+      try {
+        container.innerHTML = '<div class="text-center py-12 text-slate-400 text-xs">Ngamuat perpustakaan Alfiyyah...</div>';
+        const res = await fetch('/api/alfiyyah/chapters');
+        if (!res.ok) throw new Error("Gagal nyandak data bab Alfiyyah");
+        cachedAlfiyyahChapters = await res.json();
+        
+        // Also fetch all bayts
+        const resB = await fetch('/api/alfiyyah/bayts?limit=500');
+        if (resB.ok) {
+          cachedAlfiyyahBayts = await resB.json();
+        }
+
+        populateChapterDropdown(cachedAlfiyyahChapters);
+        renderAlfiyyahCards();
+      } catch (e) {
+        container.innerHTML = `<div class="p-6 text-center text-rose-500 text-xs">Gagal ngamuat: ${e.message}</div>`;
+      }
+    }
+
+    function populateChapterDropdown(chapters) {
+      const select = document.getElementById('alfiyyah-chapter-select');
+      if (!select) return;
+      select.innerHTML = '<option value="all">📚 Sadaya Bab (Bait 1 - 1004)</option>' + 
+        chapters.map(ch => `
+          <option value="${ch.chapter_num}">
+            Bab ${ch.chapter_num}: ${ch.name_ar} (Bait ${ch.start_bayt}-${ch.end_bayt}) - ${ch.name_su}
+          </option>
+        `).join('');
+      
+      const badge = document.getElementById('modal-alfiyyah-badge');
+      if (badge) badge.innerText = `${chapters.length} Bab • Bait 1-1004`;
+      const ftCount = document.getElementById('footer-ch-count');
+      if (ftCount) ftCount.innerText = chapters.length;
+    }
+
+    function onChapterSelectChange() {
+      renderAlfiyyahCards();
+    }
+
+    function jumpToBayt() {
+      const input = document.getElementById('alfiyyah-jump-bayt');
+      const val = parseInt(input.value);
+      if (isNaN(val) || val < 1 || val > 1004) {
+        showToast("Mangga lebetkeun nomer bait antawis 1 - 1004", "warning");
+        return;
+      }
+      // Find chapter containing this bayt
+      const found = cachedAlfiyyahChapters.find(ch => val >= ch.start_bayt && val <= ch.end_bayt);
+      if (found) {
+        document.getElementById('alfiyyah-chapter-select').value = found.chapter_num;
+        renderAlfiyyahCards();
+        showToast(`Luncat ka Bab ${found.chapter_num}: ${found.name_ar} (Bait ${val})`, "info");
+      } else {
+        renderAlfiyyahCards();
+      }
+    }
+
+    function renderAlfiyyahCards() {
+      const container = document.getElementById('alfiyyah-list-container');
+      if (!cachedAlfiyyahChapters || cachedAlfiyyahChapters.length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs">Data Alfiyyah henteu kapendak.</div>';
+        return;
+      }
+
+      const selChapter = document.getElementById('alfiyyah-chapter-select').value;
+      const q = (document.getElementById('alfiyyah-search-input').value || '').toLowerCase().trim();
+
+      let items = cachedAlfiyyahChapters;
+      if (selChapter !== 'all') {
+        const cNum = parseInt(selChapter);
+        items = items.filter(ch => ch.chapter_num === cNum);
+      }
+
+      if (q) {
+        items = items.filter(ch => 
+          (ch.name_ar && ch.name_ar.toLowerCase().includes(q)) ||
+          (ch.name_su && ch.name_su.toLowerCase().includes(q)) ||
+          (ch.syarah_ibnu_aqil && ch.syarah_ibnu_aqil.toLowerCase().includes(q)) ||
+          (ch.syarah_audhah && ch.syarah_audhah.toLowerCase().includes(q)) ||
+          (ch.sunda_formula && ch.sunda_formula.toLowerCase().includes(q)) ||
+          (ch.ihya_link && ch.ihya_link.toLowerCase().includes(q))
+        );
+      }
+
+      if (items.length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs">Henteu aya bab atanapi bait anu cocog sareng panyungsi.</div>';
+        return;
+      }
+
+      container.innerHTML = items.map(ch => {
+        // Find bayts for this chapter
+        const chBayts = cachedAlfiyyahBayts.filter(b => b.chapter_num === ch.chapter_num);
+
+        return `
+          <div class="alfiyyah-card bg-slate-50/70 border border-slate-200 hover:border-emerald-300 rounded-xl p-4 transition space-y-3.5 shadow-xs">
+            
+            <!-- Chapter Title Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-200 pb-2.5">
+              <div class="flex items-center space-x-2">
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 font-bold">
+                  Bab ${ch.chapter_num} (Bait ${ch.start_bayt}-${ch.end_bayt})
+                </span>
+                <span class="font-bold text-slate-900 text-sm">${ch.name_su}</span>
+              </div>
+              <span class="arabic-text text-base font-bold text-emerald-950">${ch.name_ar}</span>
+            </div>
+
+            <!-- Dynamic Version Content -->
+            ${renderVersionBody(ch, chBayts)}
+
+            <!-- Common Sunda Pesantren Formula -->
+            <div class="bg-emerald-50/70 p-3 rounded-lg border border-emerald-200/90 text-xs space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-emerald-900 flex items-center space-x-1.5 text-[11px]">
+                  <span>🎯</span>
+                  <span>Rumus Baku Ngalogat Pasantren Sunda:</span>
+                </span>
+                <span class="text-[10px] text-emerald-700 font-medium">Standar Alfiyyah Ibnu Malik</span>
+              </div>
+              <p class="text-emerald-950 font-medium leading-relaxed text-[11px] whitespace-pre-line">${ch.sunda_formula}</p>
+            </div>
+
+            <!-- Aplikasi Kitab Ihya 'Ulum al-Din -->
+            ${ch.ihya_link ? `
+            <div class="bg-white rounded-lg p-3 text-xs space-y-1.5 border border-slate-200 shadow-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-700 text-[11px] flex items-center space-x-1">
+                  <span>📖</span>
+                  <span>Contoh Aplikasi dina Kitab Ihya' 'Ulum al-Din:</span>
+                </span>
+                <button onclick="testInEditor('${ch.ihya_link.replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-md bg-emerald-700 hover:bg-emerald-600 text-white font-semibold text-[10px] transition shadow-xs flex items-center space-x-1">
+                  <span>Uji di Editor</span>
+                  <span>✍️</span>
+                </button>
+              </div>
+              <div class="arabic-text text-base font-bold text-slate-900 leading-relaxed bg-slate-50 p-2 rounded border border-slate-100">${ch.ihya_link}</div>
+              <div class="text-emerald-900 font-medium text-[11px] italic bg-emerald-50/60 p-2 rounded border border-emerald-100">
+                "${ch.ihya_logat || ''}"
+              </div>
+            </div>
+            ` : ''}
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderVersionBody(ch, chBayts) {
+      if (currentAlfiyyahVersion === 'ibnu_aqil') {
+        return `
+          <!-- Syarah Ibnu 'Aqil View -->
+          <div class="space-y-2.5">
+            <!-- Bayts list if available -->
+            ${chBayts.length > 0 ? `
+              <div class="space-y-1.5">
+                ${chBayts.map((b, idx) => `
+                  <div class="bg-amber-50/70 border border-amber-200/90 rounded-lg p-2.5">
+                    <div class="flex items-center justify-between text-[10px] text-amber-800 font-bold mb-1">
+                      <span>Bait #${b.bayt_num}</span>
+                      <span class="font-mono">Bahr Rajaz</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-center arabic-text text-sm font-semibold text-emerald-950">
+                      <div class="bg-white/80 py-1.5 px-2 rounded border border-amber-100">${b.sadr}</div>
+                      <div class="bg-white/80 py-1.5 px-2 rounded border border-amber-100">${b.ajz}</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <!-- Ibnu 'Aqil Commentary -->
+            <div class="bg-white p-3.5 rounded-lg border border-slate-200 space-y-2 text-xs">
+              <div class="flex items-center space-x-1.5 text-slate-800 font-bold text-[11px]">
+                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                <span>شرح بهاء الدين بن عقيل العقيلي الهمداني (ت 769 هـ):</span>
+              </div>
+              <p class="arabic-text text-sm text-slate-800 leading-loose bg-slate-50 p-2.5 rounded-md border border-slate-100">
+                ${ch.syarah_ibnu_aqil}
+              </p>
+            </div>
+          </div>
+        `;
+      } else if (currentAlfiyyahVersion === 'audhah') {
+        return `
+          <!-- Audhah al-Masalik View -->
+          <div class="space-y-2.5">
+            ${chBayts.length > 0 ? `
+              <div class="bg-amber-50/70 border border-amber-200/90 rounded-lg p-2.5">
+                <span class="text-[10px] font-bold text-amber-800 block mb-1">Bait Inti Bab:</span>
+                <div class="arabic-text text-sm font-semibold text-emerald-950 text-center leading-loose">
+                  ${chBayts[0].sadr} ... ${chBayts[0].ajz}
+                </div>
+              </div>
+            ` : ''}
+
+            <div class="bg-white p-3.5 rounded-lg border border-slate-200 space-y-2 text-xs">
+              <div class="flex items-center space-x-1.5 text-slate-800 font-bold text-[11px]">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                <span>أوضح المسالك إلى ألفية ابن مالك - الإمام ابن هشام الأنصاري (ت 761 هـ):</span>
+              </div>
+              <p class="arabic-text text-sm text-slate-800 leading-loose bg-blue-50/30 p-2.5 rounded-md border border-blue-100">
+                ${ch.syarah_audhah}
+              </p>
+            </div>
+          </div>
+        `;
+      } else if (currentAlfiyyahVersion === 'matan') {
+        return `
+          <!-- Matan Murni View -->
+          <div class="space-y-2">
+            <div class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
+              <span>نظم الخلاصة الألفية في النحو والتصريف - الإمام ابن مالك (ت 672 هـ)</span>
+              <span class="text-amber-800 font-mono text-[10px]">بحر الرجز</span>
+            </div>
+            <div class="space-y-2">
+              ${chBayts.map((b, idx) => `
+                <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3 shadow-2xs hover:bg-amber-100/50 transition">
+                  <div class="flex items-center justify-between text-[10px] text-amber-900 font-mono font-bold mb-1.5">
+                    <span class="px-2 py-0.5 rounded bg-amber-200/70">Bait ${b.bayt_num}</span>
+                    <span>شطر أول • شطر ثانٍ</span>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-center arabic-text text-base font-bold text-emerald-950">
+                    <div class="bg-white p-2 rounded-lg border border-amber-200/60 shadow-2xs">${b.sadr}</div>
+                    <div class="bg-white p-2 rounded-lg border border-amber-200/60 shadow-2xs">${b.ajz}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        // Makna Gandul & Sunda Logat View
+        return `
+          <!-- Makna Gandul & Kaidah Sunda View -->
+          <div class="space-y-2.5">
+            ${chBayts.map((b, idx) => `
+              <div class="bg-white border border-slate-200 rounded-xl p-3 space-y-2 shadow-2xs">
+                <div class="flex items-center justify-between text-[10px] border-b border-slate-100 pb-1.5">
+                  <span class="font-bold text-amber-900 font-mono bg-amber-100 px-2 py-0.5 rounded">Bait #${b.bayt_num}</span>
+                  <span class="text-slate-500 font-medium">Logat Harfiah Pasantren</span>
+                </div>
+                <!-- Arabic Hemistichs -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-center arabic-text text-sm font-bold text-emerald-950">
+                  <div class="bg-slate-50 py-1.5 px-2 rounded border border-slate-200/70">${b.sadr}</div>
+                  <div class="bg-slate-50 py-1.5 px-2 rounded border border-slate-200/70">${b.ajz}</div>
+                </div>
+                <!-- Sundanese Makna Gandul -->
+                <div class="bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100 text-xs">
+                  <span class="text-[10px] font-bold text-emerald-900 uppercase tracking-wider block mb-1">Ngalogat Pasantren Sunda:</span>
+                  <p class="text-emerald-950 font-medium leading-relaxed italic text-[11px]">${b.sunda_logat}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+    }
+
+    function filterAlfiyyahCards() {
+      renderAlfiyyahCards();
+    }
+
+    function testInEditor(text) {
+      closeAlfiyyahModal();
+      setViewMode('translate');
+      document.getElementById('arabic-input').value = text;
+      processText();
+    }
+
+</script>
+</body>
+</html>
