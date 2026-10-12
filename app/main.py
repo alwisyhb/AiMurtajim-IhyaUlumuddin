@@ -2196,8 +2196,10 @@ def index(request: Request):
     resp.headers["X-Debug-Matched"] = request.headers.get("x-matched-path", "")
     return resp
 
-@app.get("/{full_path:path}", response_class=HTMLResponse)
+@app.get("/{full_path:path}")
 def catch_all(request: Request, full_path: str):
+    if full_path.startswith("api/") or full_path == "api":
+        return JSONResponse({"detail": f"API endpoint /{full_path} not found"}, status_code=404)
     return index(request)
 
 if __name__ == "__main__":
