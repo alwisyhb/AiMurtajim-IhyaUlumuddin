@@ -5,6 +5,7 @@ import time
 import hashlib
 import sqlite3
 import traceback
+import urllib.parse
 from typing import Optional, List, Dict, Any
 from pathlib import Path
 
@@ -44,6 +45,41 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Vercel subpath rewrite middleware
+class VercelPathMiddleware:
+    def __init__(self, asgi_app):
+        self.asgi_app = asgi_app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            query_bytes = scope.get("query_string", b"")
+            query_str = query_bytes.decode("utf-8") if query_bytes else ""
+            if "__orig_path__=" in query_str:
+                parsed = urllib.parse.parse_qs(query_str)
+                orig_path = parsed.get("__orig_path__", [""])[0]
+                if orig_path:
+                    if not orig_path.startswith("/"):
+                        orig_path = "/" + orig_path
+                    scope["path"] = orig_path
+                    scope["raw_path"] = orig_path.encode("utf-8")
+                    del parsed["__orig_path__"]
+                    new_q = "&".join(
+                        f"{urllib.parse.quote(k)}={urllib.parse.quote(v)}"
+                        for k, vals in parsed.items()
+                        for v in vals
+                    )
+                    scope["query_string"] = new_q.encode("utf-8")
+                else:
+                    scope["path"] = "/"
+                    scope["raw_path"] = b"/"
+            elif scope.get("path") in ("/api/index.py", "/api/index", "/api"):
+                scope["path"] = "/"
+                scope["raw_path"] = b"/"
+
+        await self.asgi_app(scope, receive, send)
+
+app.add_middleware(VercelPathMiddleware)
 
 # Mount static files
 static_dir = BASE_DIR / "static"
