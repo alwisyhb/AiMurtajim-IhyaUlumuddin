@@ -40,7 +40,7 @@ Tersedia aplikasi web modern siap pakai yang dirancang khusus untuk muthala'ah K
 2. **Terjemahan Tiga Gaya**:
    - 🇮🇩 **Bahasa Indonesia**: Terjemahan kontekstual yang rapi dan mudah dipahami.
    - 🍃 **Basa Sunda Lemes**: Ragam bahasa hormat/halus khas pengajian para Ajengan/Kiai Sunda.
-   - 🕌 **Logat Pasantren Sunda**: Makna gandul tradisional pesantren Sunda Jawa Barat (*Ari [mubtada] ... eta [khabar] ... kalawan [hal] ... karana [maf'ul liajlih] ...*).
+   - 🕌 **Logat Pasantren Sunda**: Makna gandul tradisional pesantren Sunda Jawa Barat
 3. **Analisis I'rab & Tarkib Nahwu**: Menampilkan rincian kedudukan kata penting.
 4. **Penjelajah Database Ihya Terintegrasi**: Memilih langsung Jilid 1–4, 40 Kitab, atau mencari di antara 1.706 halaman tanpa perlu copy-paste dari luar.
 
