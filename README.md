@@ -3,8 +3,8 @@ title: AiMurtajim IhyaUlumuddin
 emoji: 📖
 colorFrom: green
 colorTo: blue
-sdk: docker
-app_port: 7860
+sdk: gradio
+app_file: server.py
 pinned: false
 ---
 
