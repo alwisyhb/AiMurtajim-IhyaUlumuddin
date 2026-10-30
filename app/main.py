@@ -1,5 +1,6 @@
 import os
 import re
+import asyncio
 import json
 import time
 import hashlib
@@ -160,6 +161,9 @@ class ProcessRequest(BaseModel):
     api_key: Optional[str] = None
     model_name: Optional[str] = "gemini-3.5-flash"
     fast_mode: Optional[bool] = False
+    stage: Optional[str] = None
+    tashkil: Optional[str] = None
+    logat: Optional[str] = None
 
 class KeyRequest(BaseModel):
     api_key: str
@@ -1486,7 +1490,7 @@ async def verify_key(req: KeyRequest):
     client = genai.Client(api_key=key)
     
     last_err = ""
-    for test_model in ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]:
+    for test_model in ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash"]:
         try:
             interaction = client.interactions.create(
                 model=test_model,
@@ -1932,11 +1936,262 @@ def search_kitab(q: str = Query(..., min_length=2), vol: Optional[int] = None, l
     conn.close()
     return results
 
+# ---------------------------------------------------------------------------
+# Gemini cascade: one call path per model, hard time budget, dead models skipped
+# ---------------------------------------------------------------------------
+GEMINI_MODEL_CHAIN = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"]
+GEMINI_TOTAL_BUDGET_S = 45.0
+GEMINI_ATTEMPT_TIMEOUT_S = 25.0
+_model_blocked_until: Dict[str, float] = {}
+
+PROMPT_CORE = """
+Anda adalah pakar penerjemah kitab kuning ke dalam Bahasa Indonesia dan Bahasa Sunda (tradisi Ngalogat Pasantren Sunda rujukan Alfiyyah Ibnu Malik).
+
+Tugas Anda (CEPAT & AKURAT):
+1. 'tashkil': Berikan syakal LENGKAP dan AKURAT sesuai kaidah Nahwu-Shorof. Harakat akhir i'rab wajib jelas.
+2. 'translation_id': Terjemahan Bahasa Indonesia yang mengalir. WAJIB kapitalisasi dhamir Allah ('-Nya', 'kepada-Nya', 'rahmat-Nya') dan Nabi Muhammad SAW ('Beliau', 'Nabi-Nya', 'Rasul-Nya').
+3. 'translation_sunda_lemes': Terjemahan Basa Sunda Lemes (ragam hormat).
+4. 'translation_sunda_logat': Terjemahan Ngalogat Pasantren Sunda murni Basa Sunda dina aksara Latin.
+5. 'translation_sunda_logat_pegon': Terjemahan Ngalogat Pasantren Sunda dina aksara Arab Pegon Sunda.
+PENTING: Kalimah diawali 'أَمَّا' -> 'anapon...', diawali 'إِمَّا' -> 'boh yen...'.
+
+Hasilkan respon HANYA dalam JSON valid:
+{
+  "tashkil": "teks arab bersyakal lengkap",
+  "translation_id": "terjemahan bahasa indonesia...",
+  "translation_sunda_lemes": "terjemahan basa sunda lemes...",
+  "translation_sunda_logat": "logat pasantren sunda dina aksara latin...",
+  "translation_sunda_logat_pegon": "logat pasantren sunda dina aksara arab pegon..."
+}
+"""
+
+PROMPT_ANALYSIS = """
+Anda adalah pakar nahwu-shorof dan penerjemah kitab kuning tradisi Ngalogat Pasantren Sunda (rujukan Alfiyyah Ibnu Malik).
+
+Tugas Anda untuk teks Arab bersyakal di bawah:
+1. 'tarkib_notes': Analisis nahwu-shorof SETIAP kata sesuai urutan teks (word, position, shorof, i_rab, symbol, note).
+2. 'translation_sunda_klasik': Array interlinear SETIAP lafadz sesuai urutan teks (word, symbol, sunda, pegon, role). Bidang 'pegon' berisi makna Sunda dalam aksara Arab Pegon.
+PENTING: Kalimah diawali 'أَمَّا' -> 'anapon...', diawali 'إِمَّا' -> 'boh yen...'.
+
+Hasilkan respon HANYA dalam JSON valid:
+{
+  "tarkib_notes": [
+    {"word": "lafadz", "position": "Kedudukan Nahwu", "shorof": "Analisis Shorof & Wazan", "i_rab": "Tanda I'rab", "symbol": "م", "note": "catatan"}
+  ],
+  "translation_sunda_klasik": [
+    {"word": "lafadz", "symbol": "م", "sunda": "makna sunda latin...", "pegon": "makna sunda pegon...", "role": "Mubtada'"}
+  ]
+}
+"""
+
+
+def _is_quota_error(s: str) -> bool:
+    return "429" in s or "RESOURCE_EXHAUSTED" in s
+
+
+def _is_gone_error(s: str) -> bool:
+    return "404" in s or "NOT_FOUND" in s
+
+
+def _is_bad_key_error(s: str) -> bool:
+    return "API_KEY_INVALID" in s or "API key not valid" in s
+
+
+def _gemini_call_sync(key: str, model: str, prompt: str) -> str:
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=key)
+    try:
+        interaction = client.interactions.create(model=model, input=prompt)
+        text = getattr(interaction, "output_text", None)
+        if not text and getattr(interaction, "outputs", None):
+            text = getattr(interaction.outputs[-1], "text", None)
+        if text:
+            return text
+    except Exception as e_int:
+        err = str(e_int)
+        if _is_quota_error(err) or _is_gone_error(err) or _is_bad_key_error(err):
+            raise
+        log_debug(f"Interactions ({model}) error, falling back to generate_content: {err[:160]}")
+
+    res = client.models.generate_content(
+        model=model,
+        contents=prompt,
+        config=types.GenerateContentConfig(temperature=0.2),
+    )
+    if res and res.text:
+        return res.text
+    raise RuntimeError("Respon kosong dari model.")
+
+
+async def run_gemini(prompt: str, candidate_keys: List[str], preferred_model: str):
+    """Returns (raw_text, model). Gives up cleanly once the time budget is spent."""
+    models = [preferred_model] + [m for m in GEMINI_MODEL_CHAIN if m != preferred_model]
+    deadline = time.monotonic() + GEMINI_TOTAL_BUDGET_S
+    errors: List[str] = []
+    out_of_time = False
+
+    for key_idx, key in enumerate(candidate_keys, 1):
+        log_debug(f"Attempting key #{key_idx}/{len(candidate_keys)} ({key[:8]}...)")
+        for model in models:
+            remaining = deadline - time.monotonic()
+            if remaining < 3:
+                out_of_time = True
+                break
+            tag = f"{key[:8]}|{model}"
+            if _model_blocked_until.get(tag, 0) > time.time():
+                errors.append(f"K#{key_idx}-{model}: dilewati (429/404 sebelumnya)")
+                continue
+            try:
+                text = await asyncio.wait_for(
+                    asyncio.to_thread(_gemini_call_sync, key, model, prompt),
+                    timeout=min(GEMINI_ATTEMPT_TIMEOUT_S, remaining),
+                )
+                log_debug(f"Success with {model} on key #{key_idx}")
+                return text, model
+            except asyncio.TimeoutError:
+                errors.append(f"K#{key_idx}-{model}: timeout")
+                log_debug(f"{model} timed out")
+            except Exception as e:
+                err = str(e)
+                errors.append(f"K#{key_idx}-{model}: {err[:90]}")
+                log_debug(f"Key #{key_idx} {model} error: {err[:200]}")
+                if _is_quota_error(err):
+                    daily = "day" in err.lower()
+                    _model_blocked_until[tag] = time.time() + (1800 if daily else 60)
+                elif _is_gone_error(err):
+                    _model_blocked_until[tag] = time.time() + 86400
+                elif _is_bad_key_error(err):
+                    break
+                elif "503" in err:
+                    await asyncio.sleep(0.5)
+        if out_of_time:
+            break
+
+    full_err = " | ".join(errors)
+    log_debug(f"ALL ATTEMPTS FAILED: {full_err}")
+    if "API_KEY_INVALID" in full_err or "API key not valid" in full_err:
+        raise HTTPException(
+            status_code=400,
+            detail="API Key yang Anda masukkan tidak valid. Silakan periksa kembali dan salin kunci dari https://aistudio.google.com/apikey",
+        )
+    if "429" in full_err or "RESOURCE_EXHAUSTED" in full_err or "quota" in full_err.lower():
+        raise HTTPException(
+            status_code=429,
+            detail="Kuota gratis Gemini untuk kunci ini sudah habis (batasnya sekitar 20 permintaan per hari per model). Coba lagi besok, atau pakai API Key lain.",
+        )
+    if out_of_time or "timeout" in full_err:
+        raise HTTPException(
+            status_code=504,
+            detail="Gemini terlalu lama menjawab. Coba lagi, atau pilih teks yang lebih pendek.",
+        )
+    if "503" in full_err or "high demand" in full_err.lower():
+        raise HTTPException(
+            status_code=503,
+            detail="Server Google Gemini sedang sibuk (503). Silakan coba lagi sebentar lagi.",
+        )
+    raise HTTPException(status_code=500, detail=f"Gagal memproses dengan Google Gemini API: {full_err[:350]}")
+
+
+def _glossary_context(cleaned_input: str) -> str:
+    _, matched_vocab = get_matched_glossary(cleaned_input)
+    if not matched_vocab:
+        return ""
+    ctx = "\n### KOSA KATA RUJUKAN DARI KAMUS PESANTREN (Gunakan Arti Ini Secara Alami Sesuai Konteks):\n"
+    for mv in matched_vocab[:15]:
+        raw_s = mv.get('sunda_meaning', '').strip()
+        clean_s = raw_s.split('/')[0].strip() if '/' in raw_s else raw_s
+        marker_str = f" [Penanda: {mv['pesantren_marker']}]" if mv.get('pesantren_marker') else ""
+        ctx += f"- Lafadz '{mv['arabic_word']}'{marker_str} -> '{clean_s}'\n"
+    return ctx
+
+
+def _cache_get(text_hash: str):
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT tashkil, tarkib_notes_json, translation_id, translation_sunda_lemes, translation_sunda_logat, translation_sunda_klasik_json, translation_sunda_logat_pegon
+            FROM translations_cache
+            WHERE text_hash = ?
+        """, (text_hash,))
+        row = cur.fetchone()
+        conn.close()
+        return row
+    except Exception as e_cache:
+        log_debug(f"Cache check error: {e_cache}")
+        return None
+
+
+def _cache_put(text_hash: str, raw_arabic: str, d: dict):
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT OR REPLACE INTO translations_cache
+            (text_hash, raw_arabic, tashkil, tarkib_notes_json, translation_id, translation_sunda_lemes, translation_sunda_logat, translation_sunda_klasik_json, translation_sunda_logat_pegon)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            text_hash,
+            raw_arabic,
+            d.get("tashkil", ""),
+            json.dumps(d.get("tarkib_notes", []), ensure_ascii=False),
+            d.get("translation_id", ""),
+            d.get("translation_sunda_lemes", ""),
+            d.get("translation_sunda_logat", ""),
+            json.dumps(d.get("translation_sunda_klasik", []), ensure_ascii=False),
+            d.get("translation_sunda_logat_pegon", ""),
+        ))
+        conn.commit()
+        conn.close()
+        log_debug(f"Saved result into translations_cache (hash: {text_hash[:8]})")
+    except Exception as e_save:
+        log_debug(f"Cache save error: {e_save}")
+
+
+def _full_from_row(row) -> dict:
+    tashkil_val = row["tashkil"]
+    logat_val = row["translation_sunda_logat"]
+    logat_pegon_val = ""
+    try:
+        logat_pegon_val = row["translation_sunda_logat_pegon"] or ""
+    except Exception:
+        pass
+    if not logat_pegon_val or not is_arabic_script(logat_pegon_val):
+        logat_pegon_val = sunda_to_pegon_full(logat_val)
+
+    tarkib_val = json.loads(row["tarkib_notes_json"]) if row["tarkib_notes_json"] else []
+    klasik_val = []
+    try:
+        if row["translation_sunda_klasik_json"]:
+            klasik_val = json.loads(row["translation_sunda_klasik_json"])
+    except Exception:
+        pass
+    klasik_val = ensure_sunda_klasik_tokens(tashkil_val, logat_val, tarkib_val, klasik_val)
+    tarkib_val = ensure_comprehensive_nahwu_shorof_analysis(tashkil_val, logat_val, tarkib_val, klasik_val)
+    return {
+        "tashkil": tashkil_val,
+        "tarkib_notes": tarkib_val,
+        "translation_id": row["translation_id"],
+        "translation_sunda_lemes": row["translation_sunda_lemes"],
+        "translation_sunda_logat": logat_val,
+        "translation_sunda_logat_pegon": logat_pegon_val,
+        "translation_sunda_klasik": klasik_val,
+        "cached": True,
+        "stage": "full",
+    }
+
+
 @app.post("/api/process")
 async def process_text(req: ProcessRequest):
     cleaned_input = req.text.strip()
     if not cleaned_input:
         raise HTTPException(status_code=400, detail="Teks Arab tidak boleh kosong.")
+
+    stage = (req.stage or "full").lower()
+    if stage not in ("full", "core", "analysis"):
+        raise HTTPException(status_code=400, detail="Parameter stage tidak dikenal.")
 
     # 1. Check for sample presets
     for k, v in SAMPLE_PRESETS.items():
@@ -1950,81 +2205,110 @@ async def process_text(req: ProcessRequest):
             tarkib_val = ensure_comprehensive_nahwu_shorof_analysis(tashkil_p, logat_p, tarkib_p, klasik_val)
             res_v["translation_sunda_klasik"] = klasik_val
             res_v["tarkib_notes"] = tarkib_val
+            res_v["stage"] = "full"
             return res_v
 
-    # 2. Check local SQLite translations_cache (Instant 0ms, 0 tokens!)
+    # 2. A finished full result is always served from cache, whatever stage was asked for
     text_hash = hashlib.sha256(cleaned_input.encode('utf-8')).hexdigest()
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT tashkil, tarkib_notes_json, translation_id, translation_sunda_lemes, translation_sunda_logat, translation_sunda_klasik_json, translation_sunda_logat_pegon 
-            FROM translations_cache 
-            WHERE text_hash = ?
-        """, (text_hash,))
-        cached_row = cur.fetchone()
-        conn.close()
-        if cached_row:
-            log_debug(f"Retrieved from local SQLite translations_cache! (hash: {text_hash[:8]})")
-            tashkil_val = cached_row["tashkil"]
-            logat_val = cached_row["translation_sunda_logat"]
-            logat_pegon_val = ""
-            try:
-                logat_pegon_val = cached_row["translation_sunda_logat_pegon"] or ""
-            except Exception:
-                pass
-            if not logat_pegon_val or not is_arabic_script(logat_pegon_val):
-                logat_pegon_val = sunda_to_pegon_full(logat_val)
+    core_hash = hashlib.sha256(("core:" + cleaned_input).encode('utf-8')).hexdigest()
+    cached_row = _cache_get(text_hash)
+    if cached_row:
+        log_debug(f"Retrieved full result from cache (hash: {text_hash[:8]})")
+        return _full_from_row(cached_row)
 
-            tarkib_val = json.loads(cached_row["tarkib_notes_json"]) if cached_row["tarkib_notes_json"] else []
-            klasik_val = []
-            try:
-                klasik_raw = cached_row["translation_sunda_klasik_json"]
-                if klasik_raw:
-                    klasik_val = json.loads(klasik_raw)
-            except Exception:
-                pass
-            klasik_val = ensure_sunda_klasik_tokens(tashkil_val, logat_val, tarkib_val, klasik_val)
-            tarkib_val = ensure_comprehensive_nahwu_shorof_analysis(tashkil_val, logat_val, tarkib_val, klasik_val)
+    if stage == "core":
+        core_row = _cache_get(core_hash)
+        if core_row:
+            log_debug(f"Retrieved core result from cache (hash: {core_hash[:8]})")
+            logat_val = core_row["translation_sunda_logat"]
+            pegon_val = core_row["translation_sunda_logat_pegon"] or ""
+            if not pegon_val or not is_arabic_script(pegon_val):
+                pegon_val = sunda_to_pegon_full(logat_val)
             return {
-                "tashkil": tashkil_val,
-                "tarkib_notes": tarkib_val,
-                "translation_id": cached_row["translation_id"],
-                "translation_sunda_lemes": cached_row["translation_sunda_lemes"],
+                "tashkil": core_row["tashkil"],
+                "translation_id": core_row["translation_id"],
+                "translation_sunda_lemes": core_row["translation_sunda_lemes"],
                 "translation_sunda_logat": logat_val,
-                "translation_sunda_logat_pegon": logat_pegon_val,
-                "translation_sunda_klasik": klasik_val,
-                "cached": True
+                "translation_sunda_logat_pegon": pegon_val,
+                "cached": True,
+                "stage": "core",
             }
-    except Exception as e_cache:
-        log_debug(f"Cache check error: {e_cache}")
 
-    # 3. Resolve API Key Pool (Supports multiple keys separated by comma or newline for automatic rotation)
+    # 3. Resolve API Key Pool (comma/newline separated keys rotate automatically)
     raw_keys_input = (req.api_key or "").strip() or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or ""
     candidate_keys = [k.strip() for k in re.split(r'[,;\n\s]+', raw_keys_input) if k.strip().startswith("AIzaSy") or len(k.strip()) > 20]
-    
     if not candidate_keys:
         raise HTTPException(
             status_code=401,
-            detail="API Key Gemini belum disetel. Silakan masukkan Gemini API Key Anda lewat tombol 'API Key' di pojok kanan atas."
+            detail="API Key Gemini belum disetel. Silakan masukkan Gemini API Key Anda di Setelan."
         )
 
-    log_debug(f"Processing text (length: {len(cleaned_input)}) with {len(candidate_keys)} candidate key(s)")
+    log_debug(f"Processing text (length: {len(cleaned_input)}, stage: {stage}) with {len(candidate_keys)} candidate key(s)")
+    glossary_context = _glossary_context(cleaned_input)
+    preferred_model = req.model_name or "gemini-3.5-flash"
 
-    from google import genai
-    from google.genai import types
-    import httpx
+    # ---- Stage: analysis (nahwu-shorof + makna miring), built on top of the core result ----
+    if stage == "analysis":
+        arabic_for_analysis = (req.tashkil or "").strip() or cleaned_input
+        prompt = f"""
+{PROMPT_ANALYSIS}
+{glossary_context}
 
-    _, matched_vocab = get_matched_glossary(cleaned_input)
-    glossary_context = ""
-    if matched_vocab:
-        glossary_context = "\n### KOSA KATA RUJUKAN DARI KAMUS PESANTREN (Gunakan Arti Ini Secara Alami Sesuai Konteks):\n"
-        for mv in matched_vocab[:15]:
-            raw_s = mv.get('sunda_meaning', '').strip()
-            clean_s = raw_s.split('/')[0].strip() if '/' in raw_s else raw_s
-            marker_str = f" [Penanda: {mv['pesantren_marker']}]" if mv.get('pesantren_marker') else ""
-            glossary_context += f"- Lafadz '{mv['arabic_word']}'{marker_str} -> '{clean_s}'\n"
+Teks Arab yang harus dianalisis:
+\"\"\"{arabic_for_analysis}\"\"\"
 
+Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
+"""
+        raw_response_text, successful_model = await run_gemini(prompt, candidate_keys, preferred_model)
+        parsed = extract_json_response(raw_response_text)
+        core_row = _cache_get(core_hash)
+        tashkil_val = (req.tashkil or "").strip() or (core_row["tashkil"] if core_row else cleaned_input)
+        logat_val = (req.logat or "").strip() or (core_row["translation_sunda_logat"] if core_row else "")
+        tarkib_val = parsed.get("tarkib_notes", [])
+        klasik_val = ensure_sunda_klasik_tokens(tashkil_val, logat_val, tarkib_val, parsed.get("translation_sunda_klasik", []))
+        tarkib_full = ensure_comprehensive_nahwu_shorof_analysis(tashkil_val, logat_val, tarkib_val, klasik_val)
+        if core_row:
+            full = _full_from_row(core_row)
+            full["tarkib_notes"] = tarkib_full
+            full["translation_sunda_klasik"] = klasik_val
+            _cache_put(text_hash, cleaned_input, full)
+        return {
+            "tarkib_notes": tarkib_full,
+            "translation_sunda_klasik": klasik_val,
+            "cached": False,
+            "model_used": successful_model,
+            "stage": "analysis",
+        }
+
+    # ---- Stage: core (tashkil + translations only, small output) ----
+    if stage == "core":
+        prompt = f"""
+{PROMPT_CORE}
+{glossary_context}
+
+Kutipan teks bahasa Arab yang harus diproses:
+\"\"\"{cleaned_input}\"\"\"
+
+Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
+"""
+        raw_response_text, successful_model = await run_gemini(prompt, candidate_keys, preferred_model)
+        parsed = extract_json_response(raw_response_text)
+        logat_val = parsed.get("translation_sunda_logat", "")
+        pegon_val = parsed.get("translation_sunda_logat_pegon")
+        if not pegon_val or not is_arabic_script(pegon_val):
+            pegon_val = sunda_to_pegon_full(logat_val)
+        core = {
+            "tashkil": parsed.get("tashkil", ""),
+            "translation_id": parsed.get("translation_id", ""),
+            "translation_sunda_lemes": parsed.get("translation_sunda_lemes", ""),
+            "translation_sunda_logat": logat_val,
+            "translation_sunda_logat_pegon": pegon_val,
+        }
+        _cache_put(core_hash, cleaned_input, core)
+        core.update({"cached": False, "model_used": successful_model, "stage": "core"})
+        return core
+
+    # ---- Stage: full (original single-call behaviour) ----
     active_instruction = SYSTEM_INSTRUCTION_FAST if req.fast_mode else SYSTEM_INSTRUCTION
     prompt = f"""
 {active_instruction}
@@ -2035,133 +2319,8 @@ Kutipan teks bahasa Arab yang harus diproses:
 
 Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
 """
+    raw_response_text, successful_model = await run_gemini(prompt, candidate_keys, preferred_model)
 
-    raw_response_text = None
-    successful_model = None
-    errors_list = []
-    preferred_model = req.model_name or "gemini-3.5-flash"
-    fallback_chain = ["gemini-3.5-flash", "gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"]
-    models_to_try = [preferred_model] + [m for m in fallback_chain if m != preferred_model]
-
-    # 4. Multi-Key & Multi-Model Cascade:
-    for key_idx, active_key in enumerate(candidate_keys, 1):
-        if raw_response_text:
-            break
-        
-        log_debug(f"Attempting key #{key_idx}/{len(candidate_keys)} ({active_key[:8]}...)")
-        client = genai.Client(api_key=active_key)
-        all_models_429 = True
-
-        for m_name in models_to_try:
-            if raw_response_text:
-                break
-            
-            log_debug(f"Key #{key_idx} -> Trying model '{m_name}'")
-            model_hit_429 = False
-
-            # Step A: Interactions API
-            try:
-                interaction = client.interactions.create(
-                    model=m_name,
-                    input=prompt
-                )
-                cand = getattr(interaction, "output_text", None)
-                if not cand and hasattr(interaction, "outputs") and interaction.outputs:
-                    cand = getattr(interaction.outputs[-1], "text", None)
-                if cand:
-                    raw_response_text = cand
-                    successful_model = m_name
-                    log_debug(f"Success with Interactions API ({m_name}) on Key #{key_idx}!")
-                    break
-            except Exception as e_int:
-                err_s = str(e_int)
-                log_debug(f"Key #{key_idx} Int ({m_name}) error: {err_s}")
-                errors_list.append(f"K#{key_idx}-{m_name}-Int: {err_s[:70]}")
-                if "429" in err_s or "RESOURCE_EXHAUSTED" in err_s:
-                    model_hit_429 = True
-                elif "503" in err_s:
-                    time.sleep(0.5)
-
-            # Step B: Models generate_content
-            if not raw_response_text and not model_hit_429:
-                try:
-                    res = client.models.generate_content(
-                        model=m_name,
-                        contents=prompt,
-                        config=types.GenerateContentConfig(temperature=0.2)
-                    )
-                    if res and res.text:
-                        raw_response_text = res.text
-                        successful_model = m_name
-                        log_debug(f"Success with Models API ({m_name}) on Key #{key_idx}!")
-                        break
-                except Exception as e_mod:
-                    err_m = str(e_mod)
-                    log_debug(f"Key #{key_idx} Mod ({m_name}) error: {err_m}")
-                    errors_list.append(f"K#{key_idx}-{m_name}-Mod: {err_m[:70]}")
-                    if "429" in err_m or "RESOURCE_EXHAUSTED" in err_m:
-                        model_hit_429 = True
-                    elif "503" in err_m:
-                        time.sleep(0.5)
-
-            # Step C: Direct REST API via httpx
-            if not raw_response_text and not model_hit_429:
-                try:
-                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{m_name}:generateContent?key={active_key}"
-                    payload = {
-                        "contents": [{"parts": [{"text": prompt}]}],
-                        "generationConfig": {"temperature": 0.2}
-                    }
-                    async with httpx.AsyncClient(timeout=35.0) as http_client:
-                        r = await http_client.post(url, json=payload)
-                        if r.status_code == 200:
-                            resp_json = r.json()
-                            candidates = resp_json.get("candidates", [])
-                            if candidates:
-                                parts = candidates[0].get("content", {}).get("parts", [])
-                                if parts:
-                                    raw_response_text = parts[0].get("text", "")
-                                    successful_model = m_name
-                                    log_debug(f"Success with REST API ({m_name}) on Key #{key_idx}!")
-                                    break
-                        elif r.status_code == 429:
-                            model_hit_429 = True
-                            errors_list.append(f"K#{key_idx}-{m_name}-REST-429")
-                except Exception as e_rest:
-                    errors_list.append(f"K#{key_idx}-{m_name}-REST: {str(e_rest)[:70]}")
-
-            if not model_hit_429:
-                all_models_429 = False
-
-        if all_models_429:
-            log_debug(f"Key #{key_idx} exhausted quota on all models. Rotating to next key in pool...")
-
-    if not raw_response_text:
-        full_err = " | ".join(errors_list)
-        log_debug(f"ALL KEYS AND STRATEGIES FAILED: {full_err}")
-
-        if "API_KEY_INVALID" in full_err or "API key not valid" in full_err:
-            raise HTTPException(
-                status_code=400,
-                detail="API Key yang Anda masukkan tidak valid. Silakan periksa kembali dan salin kunci dari https://aistudio.google.com/apikey"
-            )
-        elif "429" in full_err or "RESOURCE_EXHAUSTED" in full_err or "quota" in full_err.lower():
-            raise HTTPException(
-                status_code=429,
-                detail="Batas kuota gratis (limit: 20 request/hari pada Free Tier) untuk API Key ini sudah tercapai. Solusi instan: Silakan gunakan API Key kedua Anda dari Google AI Studio (misal project 'Default Gemini Project') untuk langsung melanjutkan secara gratis!"
-            )
-        elif "503" in full_err or "high demand" in full_err.lower():
-            raise HTTPException(
-                status_code=503,
-                detail="Server Google Gemini sedang mengalami lonjakan beban sesaat (503 High Demand). Silakan klik tombol 'Beri Syakal & Terjemahkan' sekali lagi."
-            )
-        else:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Gagal memproses dengan Google Gemini API: {full_err[:350]}"
-            )
-
-    # 5. Parse JSON safely
     parsed_result = extract_json_response(raw_response_text)
     tashkil_val = parsed_result.get("tashkil", "")
     logat_val = parsed_result.get("translation_sunda_logat", "")
@@ -2171,40 +2330,17 @@ Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
     parsed_result["translation_sunda_logat_pegon"] = logat_pegon_val
 
     tarkib_val = parsed_result.get("tarkib_notes", [])
-    klasik_tokens = parsed_result.get("translation_sunda_klasik", [])
-    klasik_val = ensure_sunda_klasik_tokens(tashkil_val, logat_val, tarkib_val, klasik_tokens)
+    klasik_val = ensure_sunda_klasik_tokens(tashkil_val, logat_val, tarkib_val, parsed_result.get("translation_sunda_klasik", []))
     tarkib_full = ensure_comprehensive_nahwu_shorof_analysis(tashkil_val, logat_val, tarkib_val, klasik_val)
     parsed_result["translation_sunda_klasik"] = klasik_val
     parsed_result["tarkib_notes"] = tarkib_full
 
-    # 6. Save result to SQLite translations_cache for instant 0ms retrieval next time!
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT OR REPLACE INTO translations_cache 
-            (text_hash, raw_arabic, tashkil, tarkib_notes_json, translation_id, translation_sunda_lemes, translation_sunda_logat, translation_sunda_klasik_json, translation_sunda_logat_pegon)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            text_hash,
-            cleaned_input,
-            parsed_result.get("tashkil", ""),
-            json.dumps(tarkib_full, ensure_ascii=False),
-            parsed_result.get("translation_id", ""),
-            parsed_result.get("translation_sunda_lemes", ""),
-            parsed_result.get("translation_sunda_logat", ""),
-            json.dumps(klasik_val, ensure_ascii=False),
-            logat_pegon_val
-        ))
-        conn.commit()
-        conn.close()
-        log_debug(f"Saved result into SQLite translations_cache (hash: {text_hash[:8]})")
-    except Exception as e_save:
-        log_debug(f"Cache save error: {e_save}")
+    _cache_put(text_hash, cleaned_input, parsed_result)
 
     parsed_result["cached"] = False
     parsed_result["model_used"] = successful_model
     parsed_result["fast_mode"] = req.fast_mode
+    parsed_result["stage"] = "full"
     return parsed_result
 
 # Serve UI
