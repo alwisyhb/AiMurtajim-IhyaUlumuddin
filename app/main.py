@@ -11,7 +11,8 @@ from typing import Optional, List, Dict, Any
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
+from starlette.datastructures import Headers
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -93,9 +94,16 @@ if static_dir.exists():
 
 # The Android app loads its screens from here, so pushing a new version reaches it at once
 class RevalidatedStaticFiles(StaticFiles):
-    async def get_response(self, path, scope):
-        response = await super().get_response(path, scope)
-        response.headers["Cache-Control"] = "no-cache"
+    # The default ETag uses size and mtime, which stay equal for a same-length edit on Vercel
+    def file_response(self, full_path, stat_result, scope, status_code=200):
+        with open(full_path, "rb") as f:
+            etag = '"' + hashlib.sha256(f.read()).hexdigest()[:32] + '"'
+        headers = {"etag": etag, "cache-control": "no-cache"}
+        if status_code == 200 and Headers(scope=scope).get("if-none-match") == etag:
+            return Response(status_code=304, headers=headers)
+        response = FileResponse(full_path, status_code=status_code, stat_result=stat_result, headers=headers)
+        if "last-modified" in response.headers:
+            del response.headers["last-modified"]
         return response
 
 mobile_web_dir = PROJECT_DIR / "mobile_web"
