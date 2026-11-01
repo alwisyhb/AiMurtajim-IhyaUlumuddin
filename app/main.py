@@ -2198,6 +2198,9 @@ def search_kitab(q: str = Query(..., min_length=1), vol: Optional[int] = None, l
 # ---------------------------------------------------------------------------
 # Gemini cascade: one call path per model, hard time budget, dead models skipped
 # ---------------------------------------------------------------------------
+# Measured on Bukhari: flash-lite answers core in 5-15s and analysis in 12-41s, while gemini-3.5-flash
+# usually hangs until its timeout and flash-lite answers anyway. The stages therefore start with it.
+GEMINI_STAGE_MODEL = "gemini-3.5-flash-lite"
 GEMINI_MODEL_CHAIN = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"]
 # Paragraf panjang memang bisa makan beberapa menit; tetap di bawah batas 300 detik Vercel.
 GEMINI_TOTAL_BUDGET_S = 240.0
@@ -2390,6 +2393,30 @@ def parse_model_json(raw_text: str) -> dict:
     return parsed
 
 
+def parse_analysis_json(raw_text: str) -> dict:
+    """Long analyses often break the JSON in one spot, so usable word entries are kept one by one."""
+    parsed = extract_json_response(raw_text)
+    if not parsed.get("_parse_failed") and (parsed.get("tarkib_notes") or parsed.get("translation_sunda_klasik")):
+        return parsed
+    tarkib, klasik = [], []
+    for match in re.finditer(r"\{[^{}]*\}", raw_text):
+        try:
+            item = json.loads(re.sub(r",(\s*\})", r"\1", match.group(0)))
+        except Exception:
+            continue
+        if not isinstance(item, dict) or not item.get("word"):
+            continue
+        if "position" in item or "i_rab" in item:
+            tarkib.append(item)
+        elif "sunda" in item:
+            klasik.append(item)
+    if not tarkib and not klasik:
+        log_debug(f"Unparseable analysis response ({len(raw_text)} chars)")
+        raise HTTPException(status_code=502, detail="Hasil dari AI rusak. Silakan coba lagi, atau pakai teks yang lebih pendek.")
+    log_debug(f"Broken analysis JSON, kept {len(tarkib)} tarkib and {len(klasik)} klasik entries")
+    return {"tarkib_notes": tarkib, "translation_sunda_klasik": klasik}
+
+
 def _glossary_context(cleaned_input: str) -> str:
     _, matched_vocab = get_matched_glossary(cleaned_input)
     if not matched_vocab:
@@ -2546,7 +2573,7 @@ async def process_text(req: ProcessRequest):
 
     log_debug(f"Processing text (length: {len(cleaned_input)}, stage: {stage}) with {len(candidate_keys)} candidate key(s)")
     glossary_context = _glossary_context(cleaned_input)
-    preferred_model = req.model_name or "gemini-3.5-flash"
+    preferred_model = GEMINI_STAGE_MODEL if stage != "full" else (req.model_name or "gemini-3.5-flash")
     instruction = instruction_for(book_cfg)
 
     # ---- Stage: analysis (nahwu-shorof + makna miring), built on top of the core result ----
@@ -2566,7 +2593,7 @@ Terjemahan logat teks tersebut:
 Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
 """
         raw_response_text, successful_model = await run_gemini(prompt, candidate_keys, preferred_model, GEMINI_ATTEMPT_TIMEOUT_ANALYSIS_S)
-        parsed = parse_model_json(raw_response_text)
+        parsed = parse_analysis_json(raw_response_text)
         core_row = _cache_get(core_hash)
         tashkil_val = (req.tashkil or "").strip() or (core_row["tashkil"] if core_row else cleaned_input)
         logat_val = (req.logat or "").strip() or (core_row["translation_sunda_logat"] if core_row else "")
