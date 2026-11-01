@@ -243,6 +243,9 @@ Tugas Anda saat memproses kutipan kitab (Ihya 'Ulum al-Din):
      1. DILARANG MENCAMPUR TRANSLITERASI ARAB LATIN! Jangan menduplikasi lafadz Arab (misal DILARANG: 'al-ula eta tetep', DILARANG: 'ari hu eta teh nyaeta hifdzul milki', DILARANG: 'bi-tarkil-ietaqi kalawan ninggalkeun'). Tuliskan LANGSUNG maknanya dalam Basa Sunda bersama partikel nahwunya.
      2. DILARANG MEMAKAI KATA BAHASA INDONESIA! Wajib 100% kosakata Basa Sunda (JANGAN pakai: 'berkata', 'maka', 'jika', 'karena', 'tetapi', 'bahwa', 'tidak', 'adalah').
         Gunakan padanan Sunda: 'Geus ngadawuh/ngucap saha...', 'Mangka', 'Lamun', 'Karana / Ku sabab', 'Nanging', 'Saestuna / Yen', 'Henteu / Moal', 'Eta / Eta tetep'.
+     3. DILARANG MEMAKAI 'kuring'! Orang pertama tunggal WAJIB 'kaula' secara konsisten dari awal sampai akhir (lihat Kaidah 5).
+     4. DILARANG RAGAM LEMES DI LOGAT! Pakai 'geus' (BUKAN 'parantos'), 'nepi' (BUKAN 'dugi'), 'datang' (BUKAN 'sumping'), 'perkara' (BUKAN 'perkawis').
+     5. TULIS SATU PILIHAN MAKNA SAJA! DILARANG menulis dua pilihan dengan garis miring (misal DILARANG: 'nyangkut/mandep') dan DILARANG menambah keterangan dalam tanda kurung.
 
    * KAIDAH 1: KHABAR MUFRAD & GHAIR MUFRAD (ALFIYYAH: وأخبروا بظرف أو بحرف جر # ناوين معنى كائن أو استقر):
      - KHABAR MUFRAD: WAJIB diawali 'eta...'
@@ -294,7 +297,7 @@ Tugas Anda saat memproses kutipan kitab (Ihya 'Ulum al-Din):
      - Huruf Baa' (الباء):
        * Al-Isti'anah (alat/sarana): 'kalawan / ku / nganggo' (contoh: بِالْقَلَمِ -> 'kalawan nganggo kalam').
        * As-Sababiyyah (sebab/karena): 'ku sabab / karana' (contoh: فَبِظُلْمٍ -> 'mangka ku sabab kadzaliman'; بِمَا كَانُوا يَكْذِبُونَ -> 'ku sabab naon perkara anu geus bukti aranjeunna eta ngabohong').
-       * Al-Ilshaq (nempel/bertemu): 'kana / dina / caket' (contoh: مَرَرْتُ بِزَيْدٍ -> 'geus ngaliwat kuring caket Ki Zaid').
+       * Al-Ilshaq (nempel/bertemu): 'kana / dina / caket' (contoh: مَرَرْتُ بِزَيْدٍ -> 'geus ngaliwat kaula caket Ki Zaid').
        * Al-Mushahabah (kebersamaan): 'sarta / kalawan dibarengan ku' (contoh: بِسَلَامٍ -> 'sarta kasalametan').
        * At-Ta'diyah (membuat muta'addi): 'kana' (contoh: ذَهَبَ اللَّهُ بِنُورِهِمْ -> 'geus ngaleungitkeun saha Gusti Allah kana cahaya maranehna').
        * Al-Qasam (sumpah): 'demi' (contoh: بِاللَّهِ -> 'demi Gusti Allah').
@@ -339,6 +342,7 @@ Tugas Anda saat memproses kutipan kitab (Ihya 'Ulum al-Din):
        * اعْلَمْ (i'lam) -> 'kudu nyaho anjeun'
        * كُنْتُمْ (kuntum) -> 'geus bukti aranjeun'
        DILARANG KERAS MENGGUNAKAN KATA 'ANJEUN' UNTUK ORANG KETIGA (GHA'IB), APALAGI UNTUK ALLAH SWT!
+       Lawan bicara jamak WAJIB 'aranjeun', BUKAN 'aranjeunna' (contoh: احْفَظُوهُ -> 'kudu apal aranjeun kana eta perkara').
 
      - ATURAN FA'IL & DHAMIR KEPADA ALLAH SWT:
        Jika Fa'il atau Marja' Dhamir adalah ALLAH SWT, CUKUP sebut 'saha Gusti Allah' (JANGAN ditambahi 'Anjeunna' di depannya!).
@@ -412,11 +416,11 @@ Logat: "Geus ngadawuh saha Gusti Allah Nu Maha Luhur dina kitab-Na."
 
 Contoh 5 (Dhamir Mukhatab Khusus 'Anjeun'):
 Teks: فَإِنْ قُلْتَ كَيْفَ ذَاكَ فَأَقُولُ
-Logat: "Mangka lamun ngucap anjeun: 'Kumaha ari eta perkara?', mangka ngucap kuring..."
+Logat: "Mangka lamun ngucap anjeun: 'Kumaha ari eta perkara?', mangka ngucap kaula..."
 
 Contoh 6 (Fi'il Madhi + Fa'il + Maf'ul Bih Objek Hidup):
 Teks: رَأَيْتُ زَيْدًا فِي الْمَسْجِدِ
-Logat: "Geus ningali kuring ka Ki Zaid di jero masjid."
+Logat: "Geus ningali kaula ka Ki Zaid di jero masjid."
 
 Contoh 7 (Harf Qad Asup Kana Fi'il Madhi -> 'temen-temen'):
 Teks: قَدْ أَفْلَحَ الْمُؤْمِنُونَ
@@ -2192,9 +2196,9 @@ Teks ini adalah hadis Shahih al-Bukhari: sanad (rangkaian perawi) lalu matan (is
 * SANAD:
   1. Nama perawi JANGAN diterjemahkan. Beri syakal yang akurat pada 'tashkil', dan tulis dengan huruf Latin yang lazim pada terjemahan (Al-Humaidi, Sufyan, Yahya bin Sa'id). Nama perawi adalah satu-satunya pengecualian dari larangan transliterasi.
   2. Lafadz periwayatan dalam 'translation_sunda_logat', mengikuti kaidah fa'il 'saha' dan mutakallim 'kaula':
-     - حَدَّثَنَا -> 'geus nyaritakeun ka kami saha [perawi]'
+     - حَدَّثَنَا -> 'geus nyaritakeun ka abdi sadayana saha [perawi]'
      - حَدَّثَنِي -> 'geus nyaritakeun ka kaula saha [perawi]'
-     - أَخْبَرَنَا -> 'geus ngawartosan ka kami saha [perawi]'
+     - أَخْبَرَنَا -> 'geus ngawartosan ka abdi sadayana saha [perawi]'
      - أَخْبَرَنِي -> 'geus ngawartosan ka kaula saha [perawi]'
      - سَمِعْتُ -> 'geus ngadangu kaula ka [perawi]'
      - عَنْ di antara perawi -> 'ti [perawi]'
@@ -2203,9 +2207,10 @@ Teks ini adalah hadis Shahih al-Bukhari: sanad (rangkaian perawi) lalu matan (is
   4. Terjemahkan seluruh sanad apa adanya, jangan diringkas dan jangan dilewati.
 
 * MATAN:
-  1. صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ ditulis 'SAW' setelah 'Kanjeng Nabi' atau 'Rasulullah'. رَضِيَ اللَّهُ عَنْهُ ditulis 'RA'.
+  1. صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ ditulis 'SAW' setelah 'Kanjeng Nabi' atau 'Rasulullah'. رَضِيَ اللَّهُ عَنْهُ dan bentuk sejenisnya WAJIB ditulis 'RA', DILARANG ditulis 'Radhiyallahu 'Anhu'.
   2. Ucapan Nabi SAW tetap diterjemahkan sebagai kutipan langsung.
   3. Jangan menambahkan syarah, penjelasan, atau nomor hadis di luar teks.
+  4. Orang pertama jamak (نَحْنُ / ـنَا) WAJIB 'abdi sadayana', bukan 'kami' atau 'abdi sadaya'. Kecuali bila yang berbicara Allah SWT, tetap 'Kami'.
 """
 
 def instruction_for(book_cfg: Dict[str, Any]) -> str:
