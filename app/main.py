@@ -1963,6 +1963,9 @@ GEMINI_MODEL_CHAIN = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.8-f
 # Paragraf panjang memang bisa makan beberapa menit; tetap di bawah batas 300 detik Vercel.
 GEMINI_TOTAL_BUDGET_S = 240.0
 GEMINI_ATTEMPT_TIMEOUT_S = 200.0
+# A stuck model should fall through quickly: core normally answers within 45s, analysis of 806 letters took 111s.
+GEMINI_ATTEMPT_TIMEOUT_CORE_S = 90.0
+GEMINI_ATTEMPT_TIMEOUT_ANALYSIS_S = 150.0
 _model_blocked_until: Dict[str, float] = {}
 
 # The logat rules live only in SYSTEM_INSTRUCTION. These only narrow which fields a stage returns.
@@ -2039,10 +2042,11 @@ def _gemini_call_sync(key: str, model: str, prompt: str) -> str:
     raise RuntimeError("Respon kosong dari model.")
 
 
-async def run_gemini(prompt: str, candidate_keys: List[str], preferred_model: str):
+async def run_gemini(prompt: str, candidate_keys: List[str], preferred_model: str, attempt_timeout: float = None):
     """Returns (raw_text, model). Gives up cleanly once the time budget is spent."""
     models = [preferred_model] + [m for m in GEMINI_MODEL_CHAIN if m != preferred_model]
     deadline = time.monotonic() + GEMINI_TOTAL_BUDGET_S
+    attempt_timeout = attempt_timeout or GEMINI_ATTEMPT_TIMEOUT_S
     errors: List[str] = []
     out_of_time = False
 
@@ -2060,7 +2064,7 @@ async def run_gemini(prompt: str, candidate_keys: List[str], preferred_model: st
             try:
                 text = await asyncio.wait_for(
                     asyncio.to_thread(_gemini_call_sync, key, model, prompt),
-                    timeout=min(GEMINI_ATTEMPT_TIMEOUT_S, remaining),
+                    timeout=min(attempt_timeout, remaining),
                 )
                 log_debug(f"Success with {model} on key #{key_idx}")
                 return text, model
@@ -2285,7 +2289,7 @@ Terjemahan logat teks tersebut:
 
 Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
 """
-        raw_response_text, successful_model = await run_gemini(prompt, candidate_keys, preferred_model)
+        raw_response_text, successful_model = await run_gemini(prompt, candidate_keys, preferred_model, GEMINI_ATTEMPT_TIMEOUT_ANALYSIS_S)
         parsed = parse_model_json(raw_response_text)
         core_row = _cache_get(core_hash)
         tashkil_val = (req.tashkil or "").strip() or (core_row["tashkil"] if core_row else cleaned_input)
@@ -2318,7 +2322,7 @@ Kutipan teks bahasa Arab yang harus diproses:
 
 Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
 """
-        raw_response_text, successful_model = await run_gemini(prompt, candidate_keys, preferred_model)
+        raw_response_text, successful_model = await run_gemini(prompt, candidate_keys, preferred_model, GEMINI_ATTEMPT_TIMEOUT_CORE_S)
         parsed = parse_model_json(raw_response_text)
         logat_val = parsed.get("translation_sunda_logat", "")
         pegon_val = parsed.get("translation_sunda_logat_pegon")
