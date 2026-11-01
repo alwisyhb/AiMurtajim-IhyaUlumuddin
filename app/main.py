@@ -2196,13 +2196,14 @@ Teks ini adalah hadis Shahih al-Bukhari: sanad (rangkaian perawi) lalu matan (is
 * SANAD:
   1. Nama perawi JANGAN diterjemahkan. Beri syakal yang akurat pada 'tashkil', dan tulis dengan huruf Latin yang lazim pada terjemahan (Al-Humaidi, Sufyan, Yahya bin Sa'id). Nama perawi adalah satu-satunya pengecualian dari larangan transliterasi.
   2. Lafadz periwayatan dalam 'translation_sunda_logat', mengikuti kaidah fa'il 'saha' dan mutakallim 'kaula':
-     - حَدَّثَنَا -> 'geus nyaritakeun ka abdi sadayana saha [perawi]'
-     - حَدَّثَنِي -> 'geus nyaritakeun ka kaula saha [perawi]'
+     - حَدَّثَنَا -> 'parantos ngadugikeun hadits ka abdi sadayana saha [perawi]'
+     - حَدَّثَنِي -> 'parantos ngadugikeun hadits ka kaula saha [perawi]'
      - أَخْبَرَنَا -> 'geus ngawartosan ka abdi sadayana saha [perawi]'
      - أَخْبَرَنِي -> 'geus ngawartosan ka kaula saha [perawi]'
      - سَمِعْتُ -> 'geus ngadangu kaula ka [perawi]'
      - عَنْ di antara perawi -> 'ti [perawi]'
      - قَالَ -> 'geus ngucap saha [perawi]'
+     Lafadz periwayatan di atas sudah ditetapkan: untuk lafadz ini 'parantos' dan 'ngadugikeun' memang benar, terkecuali dari larangan ragam lemes. JANGAN memakai 'nyaritakeun'.
   3. Dalam 'translation_id': 'telah menceritakan kepada kami', 'telah mengabarkan kepada kami', 'aku mendengar', 'dari', 'ia berkata'.
   4. Terjemahkan seluruh sanad apa adanya, jangan diringkas dan jangan dilewati.
 
