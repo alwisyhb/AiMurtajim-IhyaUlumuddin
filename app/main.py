@@ -1419,9 +1419,29 @@ def extract_json_response(raw_text: str) -> dict:
             return json.loads(candidate)
         except Exception:
             pass
+        # Models often leave a trailing comma before } or ]
+        try:
+            return json.loads(re.sub(r',(\s*[}\]])', r'\1', candidate))
+        except Exception:
+            pass
 
-    # 4. Fallback safe object so it never throws 500 error
+    # 4. Broken JSON: rescue the text fields that are still intact
+    salvaged = {}
+    for field in ("tashkil", "translation_id", "translation_sunda_lemes", "translation_sunda_logat", "translation_sunda_logat_pegon"):
+        field_match = re.search(rf'"{field}"\s*:\s*"((?:[^"\\]|\\.)*)"', raw_text)
+        if field_match:
+            try:
+                salvaged[field] = json.loads(f'"{field_match.group(1)}"')
+            except Exception:
+                salvaged[field] = field_match.group(1)
+    if salvaged.get("tashkil") and salvaged.get("translation_id"):
+        log_debug("Broken JSON from model, salvaged the text fields")
+        salvaged.update({"tarkib_notes": [], "translation_sunda_klasik": []})
+        return salvaged
+
+    # 5. Nothing usable: callers turn this into a clear error
     return {
+        "_parse_failed": True,
         "tashkil": raw_text,
         "tarkib_notes": [
             {"word": "Teks", "position": "Keterangan", "i_rab": "-", "note": "Respon AI dalam bentuk narasi"}
@@ -2095,6 +2115,14 @@ async def run_gemini(prompt: str, candidate_keys: List[str], preferred_model: st
     raise HTTPException(status_code=500, detail=f"Gagal memproses dengan Google Gemini API: {full_err[:350]}")
 
 
+def parse_model_json(raw_text: str) -> dict:
+    parsed = extract_json_response(raw_text)
+    if parsed.get("_parse_failed"):
+        log_debug(f"Unparseable model response ({len(raw_text)} chars)")
+        raise HTTPException(status_code=502, detail="Hasil dari AI rusak. Silakan coba lagi, atau pakai teks yang lebih pendek.")
+    return parsed
+
+
 def _glossary_context(cleaned_input: str) -> str:
     _, matched_vocab = get_matched_glossary(cleaned_input)
     if not matched_vocab:
@@ -2261,7 +2289,7 @@ Teks Arab yang harus dianalisis:
 Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
 """
         raw_response_text, successful_model = await run_gemini(prompt, candidate_keys, preferred_model)
-        parsed = extract_json_response(raw_response_text)
+        parsed = parse_model_json(raw_response_text)
         core_row = _cache_get(core_hash)
         tashkil_val = (req.tashkil or "").strip() or (core_row["tashkil"] if core_row else cleaned_input)
         logat_val = (req.logat or "").strip() or (core_row["translation_sunda_logat"] if core_row else "")
@@ -2293,7 +2321,7 @@ Kutipan teks bahasa Arab yang harus diproses:
 Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
 """
         raw_response_text, successful_model = await run_gemini(prompt, candidate_keys, preferred_model)
-        parsed = extract_json_response(raw_response_text)
+        parsed = parse_model_json(raw_response_text)
         logat_val = parsed.get("translation_sunda_logat", "")
         pegon_val = parsed.get("translation_sunda_logat_pegon")
         if not pegon_val or not is_arabic_script(pegon_val):
@@ -2322,7 +2350,7 @@ Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
 """
     raw_response_text, successful_model = await run_gemini(prompt, candidate_keys, preferred_model)
 
-    parsed_result = extract_json_response(raw_response_text)
+    parsed_result = parse_model_json(raw_response_text)
     tashkil_val = parsed_result.get("tashkil", "")
     logat_val = parsed_result.get("translation_sunda_logat", "")
     logat_pegon_val = parsed_result.get("translation_sunda_logat_pegon")
