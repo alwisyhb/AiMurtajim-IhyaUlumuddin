@@ -2019,6 +2019,63 @@ def search_hadith(cfg: Dict[str, Any], q: str, vol: Optional[int], limit: int):
             results = []
         if results:
             break
+
+    # Whole-word search misses forms with a prefix, such as بالنية for النية
+    seen = {r["number"] for r in results}
+    if re.search(r'\w', norm_q) and len(results) < limit:
+        escaped = norm_q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        sql = """
+            SELECT h.number, h.number_end, h.volume, k.title as kitab_title, b.title as bab_title, f.text_norm as body
+            FROM hadiths_norm_fts f
+            JOIN hadiths h ON h.number = f.number
+            JOIN kitabs k ON k.id = h.kitab_id
+            LEFT JOIN babs b ON b.id = h.bab_id
+            WHERE f.text_norm LIKE ? ESCAPE '\\'
+        """
+        params = [f"%{escaped}%"]
+        if vol:
+            sql += " AND h.volume = ?"
+            params.append(vol)
+        for row in conn.execute(sql + " ORDER BY h.number;", params):
+            if len(results) >= limit:
+                break
+            if row["number"] in seen:
+                continue
+            item = dict(row)
+            body = item.pop("body")
+            at = body.find(norm_q)
+            start = max(0, at - 90)
+            end = at + len(norm_q) + 90
+            item["excerpt"] = (
+                ("..." if start else "") + body[start:at] + MARK_OPEN + norm_q + "</mark>"
+                + body[at + len(norm_q):end] + ("..." if end < len(body) else "")
+            )
+            seen.add(item["number"])
+            results.append(item)
+
+    # A bab title can name the topic even when the hadith text never says the word
+    if raw_q and '"' not in raw_q and len(results) < limit:
+        sql = """
+            SELECT h.number, h.number_end, h.volume, k.title as kitab_title, b.title as bab_title, substr(h.text, 1, 200) as excerpt
+            FROM hadiths_fts f
+            JOIN hadiths h ON h.number = f.number
+            JOIN kitabs k ON k.id = h.kitab_id
+            LEFT JOIN babs b ON b.id = h.bab_id
+            WHERE hadiths_fts MATCH ?
+        """
+        params = [f'bab_title : "{raw_q}"']
+        if vol:
+            sql += " AND h.volume = ?"
+            params.append(vol)
+        try:
+            for row in conn.execute(sql + " ORDER BY h.number;", params):
+                if len(results) >= limit:
+                    break
+                if row["number"] not in seen:
+                    seen.add(row["number"])
+                    results.append(dict(row))
+        except Exception:
+            pass
     conn.close()
     return results
 
