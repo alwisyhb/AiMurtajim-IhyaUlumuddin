@@ -195,7 +195,7 @@ Tugas Anda saat memproses kutipan kitab (Ihya 'Ulum al-Din):
    - 'note': Catatan kaidah Nahwu Alfiyyah dan makna logat Sunda.
 
 3. 'translation_id':
-   Terjemahan Bahasa Indonesia yang mengalir, akurat, dan khidmat.
+   Terjemahan Bahasa Indonesia yang mengalir, akurat, dan khidmat. WAJIB murni Bahasa Indonesia, tanpa kata Sunda (misal tulis 'hati', BUKAN 'hate').
    *ATURAN WAJIB KAPITALISASI*:
    - Dhamir/sebutan kepada ALLAH SWT WAJIB diawali huruf kapital dengan tanda hubung: 'kepada-Nya', 'rahmat-Nya', 'ridha-Nya', 'hamba-Nya', 'petunjuk-Nya', 'Dia', 'firman-Nya'.
    - Dhamir/sebutan kepada NABI MUHAMMAD SAW WAJIB diawali huruf kapital: 'Beliau', 'Nabi-Nya', 'Rasul-Nya', 'utusan-Nya', 'ajaran Beliau'.
@@ -1965,18 +1965,13 @@ GEMINI_TOTAL_BUDGET_S = 240.0
 GEMINI_ATTEMPT_TIMEOUT_S = 200.0
 _model_blocked_until: Dict[str, float] = {}
 
-PROMPT_CORE = """
-Anda adalah pakar penerjemah kitab kuning ke dalam Bahasa Indonesia dan Bahasa Sunda (tradisi Ngalogat Pasantren Sunda rujukan Alfiyyah Ibnu Malik).
+# The logat rules live only in SYSTEM_INSTRUCTION. These only narrow which fields a stage returns.
+STAGE_SCOPE_CORE = """
+### BATASAN UNTUK PERMINTAAN INI (MENGGANTIKAN SCHEMA DI ATAS):
+Terapkan semua kaidah di atas, tetapi kerjakan HANYA: tashkil, translation_id, translation_sunda_lemes, translation_sunda_logat, translation_sunda_logat_pegon.
+JANGAN membuat tarkib_notes dan translation_sunda_klasik; keduanya dibuat pada permintaan terpisah.
 
-Tugas Anda (CEPAT & AKURAT):
-1. 'tashkil': Berikan syakal LENGKAP dan AKURAT sesuai kaidah Nahwu-Shorof. Harakat akhir i'rab wajib jelas.
-2. 'translation_id': Terjemahan Bahasa Indonesia yang mengalir. WAJIB kapitalisasi dhamir Allah ('-Nya', 'kepada-Nya', 'rahmat-Nya') dan Nabi Muhammad SAW ('Beliau', 'Nabi-Nya', 'Rasul-Nya').
-3. 'translation_sunda_lemes': Terjemahan Basa Sunda Lemes (ragam hormat).
-4. 'translation_sunda_logat': Terjemahan Ngalogat Pasantren Sunda murni Basa Sunda dina aksara Latin.
-5. 'translation_sunda_logat_pegon': Terjemahan Ngalogat Pasantren Sunda dina aksara Arab Pegon Sunda.
-PENTING: Kalimah diawali 'أَمَّا' -> 'anapon...', diawali 'إِمَّا' -> 'boh yen...'.
-
-Hasilkan respon HANYA dalam JSON valid:
+Jawablah HANYA dalam JSON valid dengan schema:
 {
   "tashkil": "teks arab bersyakal lengkap",
   "translation_id": "terjemahan bahasa indonesia...",
@@ -1986,15 +1981,13 @@ Hasilkan respon HANYA dalam JSON valid:
 }
 """
 
-PROMPT_ANALYSIS = """
-Anda adalah pakar nahwu-shorof dan penerjemah kitab kuning tradisi Ngalogat Pasantren Sunda (rujukan Alfiyyah Ibnu Malik).
+STAGE_SCOPE_ANALYSIS = """
+### BATASAN UNTUK PERMINTAAN INI (MENGGANTIKAN SCHEMA DI ATAS):
+Terapkan semua kaidah di atas, tetapi kerjakan HANYA: tarkib_notes dan translation_sunda_klasik, untuk SETIAP kata sesuai urutan teks bersyakal di bawah.
+Makna pada translation_sunda_klasik WAJIB selaras dengan terjemahan logat di bawah bila tersedia.
+Agar ringkas: JANGAN menulis bidang 'note' dan 'pegon' (aksara Pegon per kata dibuat oleh sistem), dan tulis tiap bidang sesingkat mungkin.
 
-Tugas Anda untuk teks Arab bersyakal di bawah:
-1. 'tarkib_notes': Analisis nahwu-shorof SETIAP kata sesuai urutan teks (word, position, shorof, i_rab, symbol). Tulis tiap bidang sesingkat mungkin.
-2. 'translation_sunda_klasik': Array interlinear SETIAP lafadz sesuai urutan teks (word, symbol, sunda, role).
-PENTING: Kalimah diawali 'أَمَّا' -> 'anapon...', diawali 'إِمَّا' -> 'boh yen...'.
-
-Hasilkan respon HANYA dalam JSON valid:
+Jawablah HANYA dalam JSON valid dengan schema:
 {
   "tarkib_notes": [
     {"word": "lafadz", "position": "Kedudukan Nahwu", "shorof": "Wazan singkat", "i_rab": "Tanda I'rab", "symbol": "م"}
@@ -2280,11 +2273,15 @@ async def process_text(req: ProcessRequest):
     if stage == "analysis":
         arabic_for_analysis = (req.tashkil or "").strip() or cleaned_input
         prompt = f"""
-{PROMPT_ANALYSIS}
+{SYSTEM_INSTRUCTION}
+{STAGE_SCOPE_ANALYSIS}
 {glossary_context}
 
 Teks Arab yang harus dianalisis:
 \"\"\"{arabic_for_analysis}\"\"\"
+
+Terjemahan logat teks tersebut:
+\"\"\"{(req.logat or "").strip()}\"\"\"
 
 Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
 """
@@ -2312,7 +2309,8 @@ Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
     # ---- Stage: core (tashkil + translations only, small output) ----
     if stage == "core":
         prompt = f"""
-{PROMPT_CORE}
+{SYSTEM_INSTRUCTION}
+{STAGE_SCOPE_CORE}
 {glossary_context}
 
 Kutipan teks bahasa Arab yang harus diproses:
