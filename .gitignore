@@ -16,6 +16,7 @@ api_debug.log
 scratch/
 ihya_data.db
 ihya_shamela_raw.txt
+bukhari_shamela_raw.txt
 json_exports/
 kitabs_dump.json
 

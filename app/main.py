@@ -121,6 +121,38 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+# Book registry: each book has its own database, Ihya stays the default for old clients
+BOOKS_PATH = PROJECT_DIR / "data" / "books.json"
+
+def load_books() -> List[Dict[str, Any]]:
+    with open(BOOKS_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+BOOKS = load_books()
+DEFAULT_BOOK = next(b for b in BOOKS if b.get("default"))
+
+def resolve_book(book: Optional[str]) -> Dict[str, Any]:
+    if not book:
+        return DEFAULT_BOOK
+    for b in BOOKS:
+        if b["id"] == book:
+            return b
+    raise HTTPException(status_code=400, detail=f"Kitab '{book}' tidak dikenal.")
+
+def hadith_book(book: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Returns the book when it is navigated by hadith; page based books return None."""
+    cfg = resolve_book(book)
+    return cfg if cfg["navigation"] == "hadith" else None
+
+def get_book_db(cfg: Dict[str, Any]):
+    candidates = [PROJECT_DIR / cfg["db"], Path.cwd() / cfg["db"], Path("/var/task") / cfg["db"], Path("/app") / cfg["db"]]
+    for c in candidates:
+        if c.exists():
+            conn = sqlite3.connect(str(c))
+            conn.row_factory = sqlite3.Row
+            return conn
+    raise HTTPException(status_code=500, detail=f"Database file {cfg['db']} not found.")
+
 def normalize_arabic(text: str) -> str:
     if not text:
         return ""
@@ -164,6 +196,7 @@ class ProcessRequest(BaseModel):
     stage: Optional[str] = None
     tashkil: Optional[str] = None
     logat: Optional[str] = None
+    book: Optional[str] = None
 
 class KeyRequest(BaseModel):
     api_key: str
@@ -1782,8 +1815,22 @@ def delete_glossary_item(item_id: int):
     conn.close()
     return {"success": True, "message": "Kosa kata berhasil dihapus dari kamus."}
 
+@app.get("/api/books")
+def get_books():
+    return [{k: b.get(k) for k in ("id", "title", "title_latin", "navigation", "default")} for b in BOOKS]
+
 @app.get("/api/volumes")
-def get_volumes():
+def get_volumes(book: Optional[str] = None):
+    cfg = hadith_book(book)
+    if cfg:
+        conn = get_book_db(cfg)
+        rows = conn.execute("""
+            SELECT volume as volume_number, count(*) as hadith_count,
+                   min(number) as first_hadith, max(number_end) as last_hadith
+            FROM hadiths GROUP BY volume ORDER BY volume;
+        """).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
@@ -1800,7 +1847,17 @@ def get_volumes():
     return vols
 
 @app.get("/api/kitabs")
-def get_kitabs(vol: Optional[int] = None):
+def get_kitabs(vol: Optional[int] = None, book: Optional[str] = None):
+    cfg = hadith_book(book)
+    if cfg:
+        conn = get_book_db(cfg)
+        rows = conn.execute("""
+            SELECT k.id, k.title, k.title_en, k.first_hadith, k.last_hadith, k.hadith_count,
+                   (SELECT count(*) FROM babs b WHERE b.kitab_id = k.id) as bab_count
+            FROM kitabs k ORDER BY k.id;
+        """).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
     conn = get_db()
     cur = conn.cursor()
     query = """
@@ -1822,8 +1879,63 @@ def get_kitabs(vol: Optional[int] = None):
     conn.close()
     return kitabs
 
+@app.get("/api/babs")
+def get_babs(book: str = Query(...), kitab: int = Query(..., ge=1)):
+    cfg = hadith_book(book)
+    if not cfg:
+        raise HTTPException(status_code=400, detail="Kitab ini tidak dibagi per bab hadis.")
+    conn = get_book_db(cfg)
+    rows = conn.execute("""
+        SELECT b.id, b.title, b.intro, min(h.number) as first_hadith, max(h.number_end) as last_hadith, count(h.number) as hadith_count
+        FROM babs b LEFT JOIN hadiths h ON h.bab_id = b.id
+        WHERE b.kitab_id = ? GROUP BY b.id ORDER BY b.id;
+    """, (kitab,)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+HADITH_COLUMNS = """
+    h.number, h.number_end, h.volume, h.page, h.text, h.source,
+    h.kitab_id, k.title as kitab_title, h.bab_id, b.title as bab_title, b.intro as bab_intro
+"""
+HADITH_JOINS = "FROM hadiths h JOIN kitabs k ON k.id = h.kitab_id LEFT JOIN babs b ON b.id = h.bab_id"
+
+@app.get("/api/hadith")
+def get_hadith(book: str = Query(...), number: int = Query(..., ge=1)):
+    cfg = hadith_book(book)
+    if not cfg:
+        raise HTTPException(status_code=400, detail="Kitab ini dibaca per halaman, bukan per hadis.")
+    conn = get_book_db(cfg)
+    # A text can carry a range of numbers, so any number inside the range finds it
+    row = conn.execute(f"SELECT {HADITH_COLUMNS} {HADITH_JOINS} WHERE h.number <= ? AND h.number_end >= ?;", (number, number)).fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail=f"Hadis nomor {number} tidak ditemukan.")
+    result = dict(row)
+    result["prev_number"] = conn.execute("SELECT max(number) FROM hadiths WHERE number < ?;", (row["number"],)).fetchone()[0]
+    result["next_number"] = conn.execute("SELECT min(number) FROM hadiths WHERE number > ?;", (row["number"],)).fetchone()[0]
+    result["last_number"] = conn.execute("SELECT max(number_end) FROM hadiths;").fetchone()[0]
+    conn.close()
+    return result
+
+@app.get("/api/hadiths")
+def list_hadiths(book: str = Query(...), kitab: Optional[int] = None, bab: Optional[int] = None,
+                 offset: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=100)):
+    cfg = hadith_book(book)
+    if not cfg:
+        raise HTTPException(status_code=400, detail="Kitab ini dibaca per halaman, bukan per hadis.")
+    if not kitab and not bab:
+        raise HTTPException(status_code=400, detail="Sebutkan kitab atau bab.")
+    where, params = ("h.bab_id = ?", [bab]) if bab else ("h.kitab_id = ?", [kitab])
+    conn = get_book_db(cfg)
+    total = conn.execute(f"SELECT count(*) FROM hadiths h WHERE {where};", params).fetchone()[0]
+    rows = conn.execute(f"SELECT {HADITH_COLUMNS} {HADITH_JOINS} WHERE {where} ORDER BY h.number LIMIT ? OFFSET ?;", params + [limit, offset]).fetchall()
+    conn.close()
+    return {"total": total, "offset": offset, "limit": limit, "hadiths": [dict(r) for r in rows]}
+
 @app.get("/api/page")
-def get_page(vol: int = Query(..., ge=1, le=4), page: int = Query(..., ge=1)):
+def get_page(vol: int = Query(..., ge=1, le=4), page: int = Query(..., ge=1), book: Optional[str] = None):
+    if hadith_book(book):
+        raise HTTPException(status_code=400, detail="Kitab ini dibaca per hadis. Gunakan /api/hadith.")
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
@@ -1868,8 +1980,55 @@ def normalize_ar(text: str) -> str:
     text = re.sub(r'ة', 'ه', text)
     return text.strip()
 
+MARK_OPEN = '<mark class="bg-amber-200 text-amber-900 px-1 rounded font-bold">'
+
+def search_hadith(cfg: Dict[str, Any], q: str, vol: Optional[int], limit: int):
+    conn = get_book_db(cfg)
+    raw_q = q.strip()
+    base = f"""
+        SELECT h.number, h.number_end, h.volume, k.title as kitab_title, b.title as bab_title,
+               snippet(hadiths_norm_fts, 1, '{MARK_OPEN}', '</mark>', '...', 25) as excerpt
+        FROM hadiths_norm_fts f
+        JOIN hadiths h ON h.number = f.number
+        JOIN kitabs k ON k.id = h.kitab_id
+        LEFT JOIN babs b ON b.id = h.bab_id
+        WHERE hadiths_norm_fts MATCH ?
+    """
+    if vol:
+        base += " AND h.volume = ?"
+
+    # A plain number jumps straight to that hadith
+    if raw_q.isdigit():
+        row = conn.execute("""
+            SELECT h.number, h.number_end, h.volume, k.title as kitab_title, b.title as bab_title, substr(h.text, 1, 200) as excerpt
+            FROM hadiths h JOIN kitabs k ON k.id = h.kitab_id LEFT JOIN babs b ON b.id = h.bab_id
+            WHERE h.number <= ? AND h.number_end >= ?;
+        """, (int(raw_q), int(raw_q))).fetchone()
+        conn.close()
+        return [dict(row)] if row else []
+
+    norm_q = normalize_ar(raw_q)
+    words = [w for w in norm_q.split() if len(w) > 1]
+    queries = ([f'"{norm_q}"', " AND ".join(words[:6])] if len(words) > 1 else [norm_q]) if norm_q else []
+    results = []
+    for query_str in queries:
+        params = [query_str] + ([vol] if vol else []) + [limit]
+        try:
+            results = [dict(r) for r in conn.execute(base + " ORDER BY h.number LIMIT ?;", params).fetchall()]
+        except Exception:
+            results = []
+        if results:
+            break
+    conn.close()
+    return results
+
 @app.get("/api/search")
-def search_kitab(q: str = Query(..., min_length=2), vol: Optional[int] = None, limit: int = 25):
+def search_kitab(q: str = Query(..., min_length=1), vol: Optional[int] = None, limit: int = 25, book: Optional[str] = None):
+    cfg = hadith_book(book)
+    if cfg:
+        return search_hadith(cfg, q, vol, limit)
+    if len(q) < 2:
+        raise HTTPException(status_code=422, detail="Minimal 2 huruf.")
     conn = get_db()
     cur = conn.cursor()
 
@@ -1967,6 +2126,35 @@ GEMINI_ATTEMPT_TIMEOUT_S = 200.0
 GEMINI_ATTEMPT_TIMEOUT_CORE_S = 90.0
 GEMINI_ATTEMPT_TIMEOUT_ANALYSIS_S = 150.0
 _model_blocked_until: Dict[str, float] = {}
+
+# Added on top of SYSTEM_INSTRUCTION for hadith books, which open with a chain of narrators.
+HADITH_RULES = """
+### KAIDAH TAMBAHAN UNTUK TEKS HADIS (SANAD & MATAN):
+Teks ini adalah hadis Shahih al-Bukhari: sanad (rangkaian perawi) lalu matan (isi hadis). Terapkan semua kaidah di atas pada keduanya.
+
+* SANAD:
+  1. Nama perawi JANGAN diterjemahkan. Beri syakal yang akurat pada 'tashkil', dan tulis dengan huruf Latin yang lazim pada terjemahan (Al-Humaidi, Sufyan, Yahya bin Sa'id). Nama perawi adalah satu-satunya pengecualian dari larangan transliterasi.
+  2. Lafadz periwayatan dalam 'translation_sunda_logat', mengikuti kaidah fa'il 'saha' dan mutakallim 'kaula':
+     - حَدَّثَنَا -> 'geus nyaritakeun ka kami saha [perawi]'
+     - حَدَّثَنِي -> 'geus nyaritakeun ka kaula saha [perawi]'
+     - أَخْبَرَنَا -> 'geus ngawartosan ka kami saha [perawi]'
+     - أَخْبَرَنِي -> 'geus ngawartosan ka kaula saha [perawi]'
+     - سَمِعْتُ -> 'geus ngadangu kaula ka [perawi]'
+     - عَنْ di antara perawi -> 'ti [perawi]'
+     - قَالَ -> 'geus ngucap saha [perawi]'
+  3. Dalam 'translation_id': 'telah menceritakan kepada kami', 'telah mengabarkan kepada kami', 'aku mendengar', 'dari', 'ia berkata'.
+  4. Terjemahkan seluruh sanad apa adanya, jangan diringkas dan jangan dilewati.
+
+* MATAN:
+  1. صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ ditulis 'SAW' setelah 'Kanjeng Nabi' atau 'Rasulullah'. رَضِيَ اللَّهُ عَنْهُ ditulis 'RA'.
+  2. Ucapan Nabi SAW tetap diterjemahkan sebagai kutipan langsung.
+  3. Jangan menambahkan syarah, penjelasan, atau nomor hadis di luar teks.
+"""
+
+def instruction_for(book_cfg: Dict[str, Any]) -> str:
+    if book_cfg["navigation"] == "hadith":
+        return SYSTEM_INSTRUCTION.replace("(Ihya 'Ulum al-Din)", f"({book_cfg['title_latin']})") + HADITH_RULES
+    return SYSTEM_INSTRUCTION
 
 # The logat rules live only in SYSTEM_INSTRUCTION. These only narrow which fields a stage returns.
 STAGE_SCOPE_CORE = """
@@ -2219,8 +2407,11 @@ async def process_text(req: ProcessRequest):
     if stage not in ("full", "core", "analysis"):
         raise HTTPException(status_code=400, detail="Parameter stage tidak dikenal.")
 
-    # 1. Check for sample presets
-    for k, v in SAMPLE_PRESETS.items():
+    book_cfg = resolve_book(req.book)
+    is_default_book = book_cfg is DEFAULT_BOOK
+
+    # 1. Check for sample presets (written for Ihya, so they would hide hadith rules elsewhere)
+    for k, v in (SAMPLE_PRESETS.items() if is_default_book else ()):
         if v["text"] in cleaned_input or cleaned_input in v["text"]:
             res_v = dict(v)
             tashkil_p = res_v.get("tashkil", "")
@@ -2235,8 +2426,10 @@ async def process_text(req: ProcessRequest):
             return res_v
 
     # 2. A finished full result is always served from cache, whatever stage was asked for
-    text_hash = hashlib.sha256(cleaned_input.encode('utf-8')).hexdigest()
-    core_hash = hashlib.sha256(("core:" + cleaned_input).encode('utf-8')).hexdigest()
+    # The same words get different rules per book, so other books never share Ihya's cache keys
+    book_prefix = "" if is_default_book else book_cfg["id"] + ":"
+    text_hash = hashlib.sha256((book_prefix + cleaned_input).encode('utf-8')).hexdigest()
+    core_hash = hashlib.sha256((book_prefix + "core:" + cleaned_input).encode('utf-8')).hexdigest()
     cached_row = _cache_get(text_hash)
     if cached_row:
         log_debug(f"Retrieved full result from cache (hash: {text_hash[:8]})")
@@ -2272,12 +2465,13 @@ async def process_text(req: ProcessRequest):
     log_debug(f"Processing text (length: {len(cleaned_input)}, stage: {stage}) with {len(candidate_keys)} candidate key(s)")
     glossary_context = _glossary_context(cleaned_input)
     preferred_model = req.model_name or "gemini-3.5-flash"
+    instruction = instruction_for(book_cfg)
 
     # ---- Stage: analysis (nahwu-shorof + makna miring), built on top of the core result ----
     if stage == "analysis":
         arabic_for_analysis = (req.tashkil or "").strip() or cleaned_input
         prompt = f"""
-{SYSTEM_INSTRUCTION}
+{instruction}
 {STAGE_SCOPE_ANALYSIS}
 {glossary_context}
 
@@ -2313,7 +2507,7 @@ Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
     # ---- Stage: core (tashkil + translations only, small output) ----
     if stage == "core":
         prompt = f"""
-{SYSTEM_INSTRUCTION}
+{instruction}
 {STAGE_SCOPE_CORE}
 {glossary_context}
 
@@ -2340,7 +2534,7 @@ Kembalikan jawaban HANYA berupa JSON valid sesuai skema yang diminta.
         return core
 
     # ---- Stage: full (original single-call behaviour) ----
-    active_instruction = SYSTEM_INSTRUCTION_FAST if req.fast_mode else SYSTEM_INSTRUCTION
+    active_instruction = SYSTEM_INSTRUCTION_FAST if req.fast_mode else instruction
     prompt = f"""
 {active_instruction}
 {glossary_context}

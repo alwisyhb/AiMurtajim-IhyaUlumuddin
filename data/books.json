@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ihya",
+    "title": "إحياء علوم الدين",
+    "title_latin": "Ihya' 'Ulum al-Din",
+    "db": "ihya_ulumuddin.db",
+    "navigation": "page",
+    "default": true
+  },
+  {
+    "id": "bukhari",
+    "title": "صحيح البخاري",
+    "title_latin": "Shahih al-Bukhari",
+    "db": "bukhari.db",
+    "navigation": "hadith",
+    "default": false
+  }
+]
