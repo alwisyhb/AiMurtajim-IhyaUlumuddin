@@ -1940,8 +1940,9 @@ def search_kitab(q: str = Query(..., min_length=2), vol: Optional[int] = None, l
 # Gemini cascade: one call path per model, hard time budget, dead models skipped
 # ---------------------------------------------------------------------------
 GEMINI_MODEL_CHAIN = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"]
-GEMINI_TOTAL_BUDGET_S = 45.0
-GEMINI_ATTEMPT_TIMEOUT_S = 25.0
+# Paragraf panjang memang bisa makan beberapa menit; tetap di bawah batas 300 detik Vercel.
+GEMINI_TOTAL_BUDGET_S = 240.0
+GEMINI_ATTEMPT_TIMEOUT_S = 200.0
 _model_blocked_until: Dict[str, float] = {}
 
 PROMPT_CORE = """
@@ -1969,17 +1970,17 @@ PROMPT_ANALYSIS = """
 Anda adalah pakar nahwu-shorof dan penerjemah kitab kuning tradisi Ngalogat Pasantren Sunda (rujukan Alfiyyah Ibnu Malik).
 
 Tugas Anda untuk teks Arab bersyakal di bawah:
-1. 'tarkib_notes': Analisis nahwu-shorof SETIAP kata sesuai urutan teks (word, position, shorof, i_rab, symbol, note).
-2. 'translation_sunda_klasik': Array interlinear SETIAP lafadz sesuai urutan teks (word, symbol, sunda, pegon, role). Bidang 'pegon' berisi makna Sunda dalam aksara Arab Pegon.
+1. 'tarkib_notes': Analisis nahwu-shorof SETIAP kata sesuai urutan teks (word, position, shorof, i_rab, symbol). Tulis tiap bidang sesingkat mungkin.
+2. 'translation_sunda_klasik': Array interlinear SETIAP lafadz sesuai urutan teks (word, symbol, sunda, role).
 PENTING: Kalimah diawali 'أَمَّا' -> 'anapon...', diawali 'إِمَّا' -> 'boh yen...'.
 
 Hasilkan respon HANYA dalam JSON valid:
 {
   "tarkib_notes": [
-    {"word": "lafadz", "position": "Kedudukan Nahwu", "shorof": "Analisis Shorof & Wazan", "i_rab": "Tanda I'rab", "symbol": "م", "note": "catatan"}
+    {"word": "lafadz", "position": "Kedudukan Nahwu", "shorof": "Wazan singkat", "i_rab": "Tanda I'rab", "symbol": "م"}
   ],
   "translation_sunda_klasik": [
-    {"word": "lafadz", "symbol": "م", "sunda": "makna sunda latin...", "pegon": "makna sunda pegon...", "role": "Mubtada'"}
+    {"word": "lafadz", "symbol": "م", "sunda": "makna sunda latin", "role": "Mubtada'"}
   ]
 }
 """
