@@ -91,6 +91,17 @@ except Exception:
 if static_dir.exists():
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
+# The Android app loads its screens from here, so pushing a new version reaches it at once
+class RevalidatedStaticFiles(StaticFiles):
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+mobile_web_dir = PROJECT_DIR / "mobile_web"
+if mobile_web_dir.exists():
+    app.mount("/app", RevalidatedStaticFiles(directory=str(mobile_web_dir), html=True), name="mobile_web")
+
 def log_debug(msg: str):
     try:
         with open(LOG_PATH, "a", encoding="utf-8") as f:
